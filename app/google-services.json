@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "668646066907",
+    "firebase_url": "https://odk-notifications.firebaseio.com",
+    "project_id": "odk-notifications",
+    "storage_bucket": "odk-notifications.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:668646066907:android:556e0e56c9b12bc2",
+        "android_client_info": {
+          "package_name": "android.notifications.odk.org.odknotifications"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "668646066907-a5iusktqsfh4h7q2jv727p7jndrn9nov.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDv8D2Lz3shHD36Ngk059x4F64P0XB24f0"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
