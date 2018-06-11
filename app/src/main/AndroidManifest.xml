@@ -32,7 +32,10 @@
         </service>
         <service android:name=".MyJobService"/>
 
-        <activity android:name=".Main2Activity">
+        <activity
+            android:name=".ProfileActivity"
+            android:label="My Profile"
+            android:theme="@style/AppTheme.NoActionBar">
         </activity>
     </application>
 

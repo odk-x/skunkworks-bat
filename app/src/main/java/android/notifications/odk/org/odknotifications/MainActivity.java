@@ -1,31 +1,20 @@
 package android.notifications.odk.org.odknotifications;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Toast;
 
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.iid.FirebaseInstanceId;
-
-import org.opendatakit.activities.BaseActivity;
-import org.opendatakit.application.CommonApplication;
-import org.opendatakit.database.service.UserDbInterface;
-import org.opendatakit.exception.ServicesAvailabilityException;
-import org.opendatakit.logging.WebLogger;
-import org.opendatakit.properties.CommonToolProperties;
-
-public class MainActivity extends BaseActivity
+public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
-    private String appName = "android.notifications.odk.org.odknotifications";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,9 +26,8 @@ public class MainActivity extends BaseActivity
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                String token = FirebaseInstanceId.getInstance().getToken();
-                DatabaseReference mReference = FirebaseDatabase.getInstance().getReference().child("workers123");
-                mReference.setValue(token);
+                Intent intent = new Intent(MainActivity.this,ProfileActivity.class);
+                startActivity(intent);
             }
         });
 
@@ -94,7 +82,6 @@ public class MainActivity extends BaseActivity
         if (id == R.id.nav_camera) {
             // Handle the camera action
         } else if (id == R.id.nav_gallery) {
-            Toast.makeText(this,getActiveUser()  , Toast.LENGTH_SHORT).show();
 
         } else if (id == R.id.nav_slideshow) {
 
@@ -111,29 +98,5 @@ public class MainActivity extends BaseActivity
         return true;
     }
 
-    public String getActiveUser() {
-        try {
-            return getDatabase().getActiveUser(getAppName());
-        } catch (ServicesAvailabilityException e) {
-            WebLogger.getLogger(getAppName()).printStackTrace(e);
-            return CommonToolProperties.ANONYMOUS_USER;
-        }
-    }
-    public UserDbInterface getDatabase() {
-        return ((CommonApplication) getApplication()).getDatabase();
-    }
 
-    public String getAppName() {
-        return this.appName;
-    }
-
-    @Override
-    public void databaseAvailable() {
-
-    }
-
-    @Override
-    public void databaseUnavailable() {
-
-    }
 }
