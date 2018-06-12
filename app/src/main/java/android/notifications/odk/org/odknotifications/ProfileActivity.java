@@ -1,6 +1,7 @@
 package android.notifications.odk.org.odknotifications;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.Toast;
 
 import org.opendatakit.activities.BaseActivity;
@@ -28,6 +29,8 @@ public class ProfileActivity extends BaseActivity {
             return CommonToolProperties.ANONYMOUS_USER;
         }
     }
+
+
     public UserDbInterface getDatabase() {
         return ((CommonApplication) getApplication()).getDatabase();
     }
@@ -38,11 +41,12 @@ public class ProfileActivity extends BaseActivity {
 
     @Override
     public void databaseAvailable() {
-
+        Log.e("Success", "Database available");
     }
 
     @Override
     public void databaseUnavailable() {
-
+        Log.e("ERROR", "Database unavailable");
     }
+
 }
