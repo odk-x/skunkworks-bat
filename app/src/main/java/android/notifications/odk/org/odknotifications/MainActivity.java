@@ -1,21 +1,35 @@
 package android.notifications.odk.org.odknotifications;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.TextView;
 
-public class MainActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener {
+import org.opendatakit.activities.BaseActivity;
+import org.opendatakit.application.CommonApplication;
+import org.opendatakit.consts.IntentConsts;
+import org.opendatakit.database.service.UserDbInterface;
+import org.opendatakit.exception.ServicesAvailabilityException;
+import org.opendatakit.listener.DatabaseConnectionListener;
+import org.opendatakit.logging.WebLogger;
+import org.opendatakit.properties.CommonToolProperties;
+import org.opendatakit.utilities.ODKFileUtils;
 
+public class MainActivity extends BaseActivity
+        implements NavigationView.OnNavigationItemSelectedListener, DatabaseConnectionListener {
+
+    private String appName = "android.notifications.odk.org.odknotifications";
+    private DatabaseConnectionListener mIOdkDataDatabaseListener;
+    private TextView name_tv;
+    private String loggedInUsername;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -26,10 +40,15 @@ public class MainActivity extends AppCompatActivity
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent(MainActivity.this,ProfileActivity.class);
-                startActivity(intent);
+
             }
         });
+
+        String appName = getIntent().getStringExtra(IntentConsts.INTENT_KEY_APP_NAME);
+        if (appName == null) {
+            appName = ODKFileUtils.getOdkDefaultAppName();
+        }
+        this.appName = appName;
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -39,6 +58,8 @@ public class MainActivity extends AppCompatActivity
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+        View headerView = navigationView.getHeaderView(0);
+        name_tv = (TextView) headerView.findViewById(R.id.name_tv);
     }
 
     @Override
@@ -99,4 +120,71 @@ public class MainActivity extends AppCompatActivity
     }
 
 
+    public String getActiveUser() {
+        try {
+            return getDatabase().getActiveUser(getAppName());
+        } catch (ServicesAvailabilityException e) {
+            WebLogger.getLogger(getAppName()).printStackTrace(e);
+            return CommonToolProperties.ANONYMOUS_USER;
+        }
+    }
+
+
+    public UserDbInterface getDatabase() {
+        return ((CommonApplication) getApplication()).getDatabase();
+    }
+
+    public String getAppName() {
+        return this.appName;
+    }
+
+
+    @Override
+    public void databaseAvailable() {
+
+        if (mIOdkDataDatabaseListener != null) {
+            mIOdkDataDatabaseListener.databaseAvailable();
+        }
+        loggedInUsername = getActiveUser();
+        Log.e("Success", "Database available" + loggedInUsername);
+        if(loggedInUsername!=null)name_tv.setText(loggedInUsername);
+    }
+
+    @Override
+    public void databaseUnavailable() {
+
+        if (mIOdkDataDatabaseListener != null) {
+            mIOdkDataDatabaseListener.databaseUnavailable();
+        }
+        Log.e("ERROR", "Database unavailable");
+
+    }
+
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        ((CommonApplication) getApplication()).onActivityResume(this);
+        ((CommonApplication) getApplication()).establishDoNotFireDatabaseConnectionListener(this);
+    }
+
+    @Override
+    protected void onPostResume() {
+        super.onPostResume();
+        ((CommonApplication) getApplication()).fireDatabaseConnectionListener();
+    }
+
+    @Override
+    protected void onPause() {
+        ((CommonApplication) getApplication()).onActivityPause(this);
+        super.onPause();
+    }
+
+    @Override
+    protected void onDestroy() {
+        ((CommonApplication) getApplication()).onActivityDestroy(this);
+        super.onDestroy();
+    }
 }
+
+

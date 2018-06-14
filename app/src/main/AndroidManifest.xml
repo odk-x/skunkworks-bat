@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
           package="android.notifications.odk.org.odknotifications">
-
+    <uses-permission android:name="org.opendatakit.database.RUN_DATABASE" />
     <application
         android:name="android.notifications.odk.org.odknotifications.getUserData"
         android:allowBackup="true"
