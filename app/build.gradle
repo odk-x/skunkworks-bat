@@ -34,5 +34,6 @@ dependencies {
 
     implementation(group: 'org.opendatakit', name: 'masterBasicAndroidlibrary', version: 'rev224', classifier: 'masterBasicRelease', ext: 'aar')
     implementation(group: 'org.opendatakit', name: 'masterBasicAndroidcommon', version: 'rev224', classifier: 'masterBasicRelease', ext: 'aar')
+    implementation 'com.journeyapps:zxing-android-embedded:3.4.0'
 }
 apply plugin: 'com.google.gms.google-services'
