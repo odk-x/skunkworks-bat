@@ -1,6 +1,9 @@
 package android.notifications.odk.org.odknotifications;
 
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -12,6 +15,14 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.dynamiclinks.FirebaseDynamicLinks;
+import com.google.firebase.dynamiclinks.PendingDynamicLinkData;
+import com.google.zxing.integration.android.IntentIntegrator;
+import com.google.zxing.integration.android.IntentResult;
 
 import org.opendatakit.activities.BaseActivity;
 import org.opendatakit.application.CommonApplication;
@@ -23,6 +34,13 @@ import org.opendatakit.logging.WebLogger;
 import org.opendatakit.properties.CommonToolProperties;
 import org.opendatakit.utilities.ODKFileUtils;
 
+import java.io.UnsupportedEncodingException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLDecoder;
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 public class MainActivity extends BaseActivity
         implements NavigationView.OnNavigationItemSelectedListener, DatabaseConnectionListener {
 
@@ -30,6 +48,9 @@ public class MainActivity extends BaseActivity
     private DatabaseConnectionListener mIOdkDataDatabaseListener;
     private TextView name_tv;
     private String loggedInUsername;
+    private IntentIntegrator qrScan;
+    private String TAG = "ODK Notifications";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -40,7 +61,8 @@ public class MainActivity extends BaseActivity
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
+                qrScan = new IntentIntegrator(MainActivity.this);
+                qrScan.initiateScan();
             }
         });
 
@@ -60,6 +82,24 @@ public class MainActivity extends BaseActivity
         navigationView.setNavigationItemSelectedListener(this);
         View headerView = navigationView.getHeaderView(0);
         name_tv = (TextView) headerView.findViewById(R.id.name_tv);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        IntentResult result = IntentIntegrator.parseActivityResult(requestCode, resultCode, data);
+        if (result != null) {
+            //if qrcode has nothing in it
+            if (result.getContents() == null) {
+                Toast.makeText(this, "Result Not Found", Toast.LENGTH_LONG).show();
+            } else {
+                //if qr contains data
+               String link = result.getContents();
+               Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(link));
+               startActivity(browserIntent);
+            }
+        } else {
+            super.onActivityResult(requestCode, resultCode, data);
+        }
     }
 
     @Override
@@ -146,6 +186,7 @@ public class MainActivity extends BaseActivity
             mIOdkDataDatabaseListener.databaseAvailable();
         }
         loggedInUsername = getActiveUser();
+        getDeepLink();
         Log.e("Success", "Database available" + loggedInUsername);
         if(loggedInUsername!=null)name_tv.setText(loggedInUsername);
     }
@@ -185,6 +226,57 @@ public class MainActivity extends BaseActivity
         ((CommonApplication) getApplication()).onActivityDestroy(this);
         super.onDestroy();
     }
+
+    public void getDeepLink(){
+        FirebaseDynamicLinks.getInstance()
+                .getDynamicLink(getIntent())
+                .addOnSuccessListener(this, new OnSuccessListener<PendingDynamicLinkData>() {
+                    @Override
+                    public void onSuccess(PendingDynamicLinkData pendingDynamicLinkData) {
+
+                        // Get deep link from result (may be null if no link is found)
+                        Uri deepLink = null;
+
+                        if (pendingDynamicLinkData != null) {
+                            deepLink = pendingDynamicLinkData.getLink();
+                        }
+
+                        try {
+                            if(deepLink!=null) {
+                                URL url = new URL(deepLink.toString());
+                                Map<String, String> map = splitQuery(url);
+                                String id = map.get("id");
+                                new JoinNotificationGroup(MainActivity.this, id,getActiveUser()).execute();
+                            }
+                            else {
+                                Log.d(TAG, "getDynamicLink: no link found");
+                            }
+                        } catch (MalformedURLException e) {
+                            e.printStackTrace();
+                        } catch (UnsupportedEncodingException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                })
+                .addOnFailureListener(this, new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.w(TAG, "getDynamicLink:onFailure", e);
+                    }
+                });
+    }
+
+    public static Map<String, String> splitQuery(URL url) throws UnsupportedEncodingException {
+        Map<String, String> query_pairs = new LinkedHashMap<String, String>();
+        String query = url.getQuery();
+        String[] pairs = query.split("&");
+        for (String pair : pairs) {
+            int idx = pair.indexOf("=");
+            query_pairs.put(URLDecoder.decode(pair.substring(0, idx), "UTF-8"), URLDecoder.decode(pair.substring(idx + 1), "UTF-8"));
+        }
+        return query_pairs;
+    }
+
 }
 
 
