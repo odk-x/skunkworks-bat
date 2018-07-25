@@ -32,6 +32,7 @@ import org.opendatakit.exception.ServicesAvailabilityException;
 import org.opendatakit.listener.DatabaseConnectionListener;
 import org.opendatakit.logging.WebLogger;
 import org.opendatakit.properties.CommonToolProperties;
+import org.opendatakit.properties.PropertiesSingleton;
 import org.opendatakit.utilities.ODKFileUtils;
 
 import java.io.UnsupportedEncodingException;
@@ -50,6 +51,7 @@ public class MainActivity extends BaseActivity
     private String loggedInUsername;
     private IntentIntegrator qrScan;
     private String TAG = "ODK Notifications";
+    private PropertiesSingleton mPropSingleton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -82,6 +84,8 @@ public class MainActivity extends BaseActivity
         navigationView.setNavigationItemSelectedListener(this);
         View headerView = navigationView.getHeaderView(0);
         name_tv = (TextView) headerView.findViewById(R.id.name_tv);
+
+        joinODKGroups();
     }
 
     @Override
@@ -189,6 +193,8 @@ public class MainActivity extends BaseActivity
         getDeepLink();
         Log.e("Success", "Database available" + loggedInUsername);
         if(loggedInUsername!=null)name_tv.setText(loggedInUsername);
+
+        getGroups();
     }
 
     @Override
@@ -276,6 +282,23 @@ public class MainActivity extends BaseActivity
         }
         return query_pairs;
     }
+
+    public void getGroups(){
+      try {
+            String roles = getDatabase().getRolesList(getAppName());
+            System.out.println(roles);
+        } catch (ServicesAvailabilityException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void joinODKGroups(){
+        //TODO: complete this method to make user register to ODK Groups.
+        new JoinNotificationGroup(this, "north", "user1").execute();
+        new JoinNotificationGroup(this, "all", "user1").execute();
+
+    }
+
 
 }
 
