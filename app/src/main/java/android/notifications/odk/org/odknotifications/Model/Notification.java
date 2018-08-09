@@ -5,10 +5,10 @@ import java.text.SimpleDateFormat;
 public class Notification {
     String title;
     String message;
-    Integer date;
+    Long date;
     String group;
 
-    public Notification(String title, String message, Integer date, String group) {
+    public Notification(String title, String message, Long date, String group) {
         this.title = title;
         this.message = message;
         this.date = date;
@@ -31,11 +31,11 @@ public class Notification {
         this.message = message;
     }
 
-    public Integer getDate() {
+    public Long getDate() {
         return date;
     }
 
-    public void setDate(Integer date) {
+    public void setDate(Long date) {
         this.date = date;
     }
 
@@ -48,6 +48,6 @@ public class Notification {
     }
 
     public String getStringDate(){
-        return  new SimpleDateFormat("HH:mm:ss dd/MM/yyyy").format(date * 1000L);
+        return  new SimpleDateFormat("HH:mm dd/MM/yyyy").format(date);
     }
 }

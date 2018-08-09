@@ -12,7 +12,7 @@ import java.util.ArrayList;
 
 public class DBHandler extends SQLiteOpenHelper {
 
-   private static final int DATABASE_VERSION = 7;
+   private static final int DATABASE_VERSION = 8;
    private static final String DATABASE_NAME = "odknotifications.db";
    private static final String TABLE_GROUPS = "groups";
    private static final String TABLE_NOTIFICATIONS = "notifications";
@@ -43,7 +43,7 @@ public class DBHandler extends SQLiteOpenHelper {
                 COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
                 COLUMN_TITLE + " TEXT, " +
                 COLUMN_MESSAGE + " TEXT, " +
-                COLUMN_DATE + " INTEGER, " +
+                COLUMN_DATE + " TEXT, " +
                 "group_name TEXT "+
                 ");";
         db.execSQL(query2);
@@ -109,7 +109,7 @@ public class DBHandler extends SQLiteOpenHelper {
             if(c.getString(c.getColumnIndex(COLUMN_TITLE))!=null){
                 String title = c.getString(c.getColumnIndex(COLUMN_TITLE));
                 String message = c.getString(c.getColumnIndex(COLUMN_MESSAGE));
-                Integer date = c.getInt(c.getColumnIndex(COLUMN_DATE));
+                Long date = Long.parseLong(c.getString(c.getColumnIndex(COLUMN_DATE)));
                 String group = c.getString(c.getColumnIndex(COLUMN_GROUP_NAME));
                 notificationArrayList.add(new Notification(title,message,date,group));
             }
@@ -125,7 +125,7 @@ public class DBHandler extends SQLiteOpenHelper {
         ContentValues values = new ContentValues();
         values.put(COLUMN_TITLE, notification.getTitle());
         values.put(COLUMN_MESSAGE, (notification.getMessage()));
-        values.put(COLUMN_DATE, (notification.getDate()));
+        values.put(COLUMN_DATE, (String.valueOf(notification.getDate())));
         values.put(COLUMN_GROUP_NAME,notification.getGroup());
         SQLiteDatabase db = getWritableDatabase();
         db.insert(TABLE_NOTIFICATIONS,null ,values);
