@@ -1,12 +1,13 @@
-package android.notifications.odk.org.odknotifications.DatabaseCommunicator;
+package org.odk.odknotifications.DatabaseCommunicator;
 
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
-import android.notifications.odk.org.odknotifications.Model.Group;
-import android.notifications.odk.org.odknotifications.Model.Notification;
+
+import org.odk.odknotifications.Model.Group;
+import org.odk.odknotifications.Model.Notification;
 
 import java.util.ArrayList;
 

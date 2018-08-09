@@ -1,11 +1,9 @@
-package android.notifications.odk.org.odknotifications;
+package org.odk.odknotifications;
 
 import android.app.ProgressDialog;
-import android.notifications.odk.org.odknotifications.Activities.MainActivity;
 import android.os.AsyncTask;
-
 import com.google.firebase.iid.FirebaseInstanceId;
-
+import org.odk.odknotifications.Activities.MainActivity;
 import java.io.IOException;
 
 public class UnsubscribeNotificationGroups extends AsyncTask<Void, Void, Void> {

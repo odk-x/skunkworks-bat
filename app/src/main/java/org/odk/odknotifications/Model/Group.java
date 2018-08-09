@@ -1,4 +1,4 @@
-package android.notifications.odk.org.odknotifications.Model;
+package org.odk.odknotifications.Model;
 
 public class Group {
     private String name;

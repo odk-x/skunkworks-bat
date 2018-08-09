@@ -1,12 +1,12 @@
-package android.notifications.odk.org.odknotifications.Adapters;
+package org.odk.odknotifications.Adapters;
 
-import android.notifications.odk.org.odknotifications.Model.Notification;
-import android.notifications.odk.org.odknotifications.R;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import org.odk.odknotifications.Model.Notification;
+import org.odk.odknotifications.R;
 
 import java.util.List;
 

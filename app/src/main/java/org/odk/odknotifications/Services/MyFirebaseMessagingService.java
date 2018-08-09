@@ -1,4 +1,4 @@
-package android.notifications.odk.org.odknotifications.Services;
+package org.odk.odknotifications.Services;
 
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -7,10 +7,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.media.RingtoneManager;
 import android.net.Uri;
-import android.notifications.odk.org.odknotifications.Activities.MainActivity;
-import android.notifications.odk.org.odknotifications.DatabaseCommunicator.DBHandler;
-import android.notifications.odk.org.odknotifications.Model.Notification;
-import android.notifications.odk.org.odknotifications.R;
 import android.os.Build;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
@@ -20,6 +16,11 @@ import com.firebase.jobdispatcher.GooglePlayDriver;
 import com.firebase.jobdispatcher.Job;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
+
+import org.odk.odknotifications.Activities.MainActivity;
+import org.odk.odknotifications.DatabaseCommunicator.DBHandler;
+import org.odk.odknotifications.Model.Notification;
+import org.odk.odknotifications.R;
 
 import java.util.Random;
 
@@ -73,7 +74,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         // [START dispatch_job]
         FirebaseJobDispatcher dispatcher = new FirebaseJobDispatcher(new GooglePlayDriver(this));
         Job myJob = dispatcher.newJobBuilder()
-                .setService(MyJobService.class)
+                .setService(org.odk.odknotifications.Services.MyJobService.class)
                 .setTag("my-job-tag")
                 .build();
         dispatcher.schedule(myJob);

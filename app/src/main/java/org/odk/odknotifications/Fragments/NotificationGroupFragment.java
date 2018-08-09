@@ -1,9 +1,5 @@
-package android.notifications.odk.org.odknotifications.Fragments;
+package org.odk.odknotifications.Fragments;
 
-import android.notifications.odk.org.odknotifications.Adapters.NotificationAdapter;
-import android.notifications.odk.org.odknotifications.DatabaseCommunicator.DBHandler;
-import android.notifications.odk.org.odknotifications.Model.Notification;
-import android.notifications.odk.org.odknotifications.R;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
@@ -11,6 +7,11 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+
+import org.odk.odknotifications.Adapters.NotificationAdapter;
+import org.odk.odknotifications.DatabaseCommunicator.DBHandler;
+import org.odk.odknotifications.Model.Notification;
+import org.odk.odknotifications.R;
 
 import java.util.ArrayList;
 

@@ -1,4 +1,4 @@
-package android.notifications.odk.org.odknotifications;
+package org.odk.odknotifications;
 
 import android.annotation.SuppressLint;
 

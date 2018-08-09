@@ -1,13 +1,7 @@
-package android.notifications.odk.org.odknotifications.Activities;
+package org.odk.odknotifications.Activities;
 
 import android.content.Intent;
 import android.net.Uri;
-import android.notifications.odk.org.odknotifications.DatabaseCommunicator.DBHandler;
-import android.notifications.odk.org.odknotifications.Fragments.NotificationGroupFragment;
-import android.notifications.odk.org.odknotifications.Model.Group;
-import android.notifications.odk.org.odknotifications.R;
-import android.notifications.odk.org.odknotifications.SubscribeNotificationGroup;
-import android.notifications.odk.org.odknotifications.UnsubscribeNotificationGroups;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
@@ -40,6 +34,12 @@ import com.google.zxing.integration.android.IntentResult;
 
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.odk.odknotifications.DatabaseCommunicator.DBHandler;
+import org.odk.odknotifications.Fragments.NotificationGroupFragment;
+import org.odk.odknotifications.Model.Group;
+import org.odk.odknotifications.R;
+import org.odk.odknotifications.SubscribeNotificationGroup;
+import org.odk.odknotifications.UnsubscribeNotificationGroups;
 import org.opendatakit.application.CommonApplication;
 import org.opendatakit.consts.IntentConsts;
 import org.opendatakit.database.service.UserDbInterface;
@@ -62,7 +62,7 @@ import java.util.Map;
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, DatabaseConnectionListener {
 
-    private String appName = "android.notifications.odk.org.odknotifications";
+    private String appName = "org.odk.odknotifications";
     private DatabaseConnectionListener mIOdkDataDatabaseListener;
     private TextView name_tv;
     private String loggedInUsername;

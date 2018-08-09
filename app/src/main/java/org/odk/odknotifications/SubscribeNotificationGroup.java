@@ -1,7 +1,6 @@
-package android.notifications.odk.org.odknotifications;
+package org.odk.odknotifications;
 
 import android.app.ProgressDialog;
-import android.notifications.odk.org.odknotifications.Activities.MainActivity;
 import android.os.AsyncTask;
 import android.support.annotation.NonNull;
 import android.util.Log;
@@ -9,6 +8,8 @@ import android.util.Log;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.messaging.FirebaseMessaging;
+
+import org.odk.odknotifications.Activities.MainActivity;
 
 public class SubscribeNotificationGroup extends AsyncTask<Void, Void, Void> {
 

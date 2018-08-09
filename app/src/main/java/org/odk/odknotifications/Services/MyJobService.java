@@ -1,4 +1,4 @@
-package android.notifications.odk.org.odknotifications.Services;
+package org.odk.odknotifications.Services;
 
 import android.util.Log;
 
