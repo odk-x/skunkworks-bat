@@ -22,10 +22,6 @@ public class DBHandler extends SQLiteOpenHelper {
    private static final String COLUMN_DATE = "date";
    private static final String COLUMN_GROUP_NAME = "group_name";
    private static final String COLUMN_GRP_ID = "grp_id";
-
-
-
-
    private static final String COLUMN_ID = "_id";
    private static final String COLUMN_SNOOZE = "snooze";
 

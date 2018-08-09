@@ -102,35 +102,7 @@ public class MainActivity extends AppCompatActivity
         View headerView = navigationView.getHeaderView(0);
         name_tv = (TextView) headerView.findViewById(R.id.name_tv);
 
-        Thread t = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        addMenuItemInNavMenuDrawer();
-                    }
-                });
-            }
-        });
-        t.start();
-
-        navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
-            @Override
-            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-                NotificationGroupFragment fragment = new NotificationGroupFragment();
-                Bundle bundle = new Bundle();
-                bundle.putString("name", item.getTitle().toString());
-                FragmentManager manager = getSupportFragmentManager();
-                fragment.setArguments(bundle);
-                FragmentTransaction transaction = manager.beginTransaction();
-                transaction.replace(R.id.container,fragment);
-                transaction.commit();
-                navigationView.invalidate();
-                return true;
-            }
-        });
-
+        addMenuItemInNavMenuDrawer();
     }
 
     @Override
@@ -181,18 +153,12 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
+
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
         if (id == R.id.action_sync) {
             syncCloudDatabase();
             return true;
-        }
-        else{
-
         }
 
         return super.onOptionsItemSelected(item);
@@ -208,8 +174,14 @@ public class MainActivity extends AppCompatActivity
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
         // Handle navigation view item clicks here.
-        int id = item.getItemId();
-
+        NotificationGroupFragment fragment = new NotificationGroupFragment();
+        Bundle bundle = new Bundle();
+        bundle.putString("name", item.getTitle().toString());
+        FragmentManager manager = getSupportFragmentManager();
+        fragment.setArguments(bundle);
+        FragmentTransaction transaction = manager.beginTransaction();
+        transaction.replace(R.id.container,fragment);
+        transaction.commit();
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
@@ -358,7 +330,6 @@ public class MainActivity extends AppCompatActivity
    }
 
     public void joinODKGroups(ArrayList<Group> groupArrayList){
-        groupArrayList.add(new Group("All", 0));
         new UnsubscribeNotificationGroups(this).execute();
         new SubscribeNotificationGroup(this, groupArrayList, getActiveUser()).execute();
         dbHandler.newGroupDatabase(groupArrayList);

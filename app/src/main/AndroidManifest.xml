@@ -37,11 +37,6 @@
         </service>
         <service android:name=".Services.MyJobService"/>
 
-        <activity
-            android:name=".ProfileActivity"
-            android:label="My Profile"
-            android:theme="@style/AppTheme.NoActionBar">
-        </activity>
     </application>
 
 </manifest>
