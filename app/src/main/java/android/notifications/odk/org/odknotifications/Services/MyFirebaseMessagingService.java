@@ -1,4 +1,4 @@
-package android.notifications.odk.org.odknotifications;
+package android.notifications.odk.org.odknotifications.Services;
 
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -7,6 +7,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.media.RingtoneManager;
 import android.net.Uri;
+import android.notifications.odk.org.odknotifications.Activities.MainActivity;
+import android.notifications.odk.org.odknotifications.DatabaseCommunicator.DBHandler;
+import android.notifications.odk.org.odknotifications.Model.Notification;
+import android.notifications.odk.org.odknotifications.R;
 import android.os.Build;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
@@ -17,6 +21,7 @@ import com.firebase.jobdispatcher.Job;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 
+import java.util.Date;
 import java.util.Random;
 
 public class MyFirebaseMessagingService extends FirebaseMessagingService {
@@ -50,7 +55,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
             Log.e(TAG, "Message data payload: " + remoteMessage.getData());
             // Handle message within 10 seconds
                 handleNow();
-            sendNotification(remoteMessage.getData().get("title"),remoteMessage.getData().get("message"));
+            sendNotification(remoteMessage.getData().get("title"),remoteMessage.getData().get("message"), remoteMessage.getData().get("group"));
 
         }
         // Check if message contains a notification payload.
@@ -87,9 +92,10 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
      * Create and show a simple notification containing the received FCM message.
      *
      * @param messageBody FCM message body received.
+     * @param group
      */
 
-    private void sendNotification(String messageTitle, String messageBody) {
+    private void sendNotification(String messageTitle, String messageBody, String group) {
         Intent intent = new Intent(this, MainActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0 /* Request code */, intent,
@@ -120,5 +126,8 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
         assert notificationManager != null;
         notificationManager.notify(new Random().nextInt() /* ID of notification */, notificationBuilder.build());
+        DBHandler dbHandler = new DBHandler(this,null,null,1);
+        int date_time =(int) new Date().getTime()/1000;
+        dbHandler.addNotification(new Notification(messageTitle,messageBody,date_time,group));
     }
 }

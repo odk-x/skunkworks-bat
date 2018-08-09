@@ -1,14 +1,23 @@
-package android.notifications.odk.org.odknotifications;
+package android.notifications.odk.org.odknotifications.Activities;
 
 import android.content.Intent;
 import android.net.Uri;
+import android.notifications.odk.org.odknotifications.DatabaseCommunicator.DBHandler;
+import android.notifications.odk.org.odknotifications.Fragments.NotificationGroupFragment;
+import android.notifications.odk.org.odknotifications.Model.Group;
+import android.notifications.odk.org.odknotifications.R;
+import android.notifications.odk.org.odknotifications.SubscribeNotificationGroup;
+import android.notifications.odk.org.odknotifications.UnsubscribeNotificationGroups;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
@@ -24,7 +33,8 @@ import com.google.firebase.dynamiclinks.PendingDynamicLinkData;
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
 
-import org.opendatakit.activities.BaseActivity;
+import org.json.JSONArray;
+import org.json.JSONException;
 import org.opendatakit.application.CommonApplication;
 import org.opendatakit.consts.IntentConsts;
 import org.opendatakit.database.service.UserDbInterface;
@@ -39,34 +49,41 @@ import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLDecoder;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-public class MainActivity extends BaseActivity
+
+public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, DatabaseConnectionListener {
 
     private String appName = "android.notifications.odk.org.odknotifications";
     private DatabaseConnectionListener mIOdkDataDatabaseListener;
     private TextView name_tv;
     private String loggedInUsername;
-    private IntentIntegrator qrScan;
     private String TAG = "ODK Notifications";
     private PropertiesSingleton mPropSingleton;
+    private DBHandler dbHandler;
+    private ArrayList<Group> groupArrayList;
+    public static final String ARG_GROUP_NAME = "name";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                qrScan = new IntentIntegrator(MainActivity.this);
+                IntentIntegrator qrScan = new IntentIntegrator(MainActivity.this);
                 qrScan.initiateScan();
             }
         });
+
+        dbHandler = new DBHandler(this,null,null,1);
 
         String appName = getIntent().getStringExtra(IntentConsts.INTENT_KEY_APP_NAME);
         if (appName == null) {
@@ -80,12 +97,40 @@ public class MainActivity extends BaseActivity
         drawer.addDrawerListener(toggle);
         toggle.syncState();
 
-        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        final NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
         View headerView = navigationView.getHeaderView(0);
         name_tv = (TextView) headerView.findViewById(R.id.name_tv);
 
-        joinODKGroups();
+        Thread t = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        addMenuItemInNavMenuDrawer();
+                    }
+                });
+            }
+        });
+        t.start();
+
+        navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
+            @Override
+            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+                NotificationGroupFragment fragment = new NotificationGroupFragment();
+                Bundle bundle = new Bundle();
+                bundle.putString("name", item.getTitle().toString());
+                FragmentManager manager = getSupportFragmentManager();
+                fragment.setArguments(bundle);
+                FragmentTransaction transaction = manager.beginTransaction();
+                transaction.replace(R.id.container,fragment);
+                transaction.commit();
+                navigationView.invalidate();
+                return true;
+            }
+        });
+
     }
 
     @Override
@@ -116,11 +161,22 @@ public class MainActivity extends BaseActivity
         }
     }
 
+    private void addMenuItemInNavMenuDrawer() {
+
+        NavigationView navView = (NavigationView) findViewById(R.id.nav_view);
+        ArrayList<Group> groupArrayList = dbHandler.getGroups();
+        Menu menu = navView.getMenu();
+        menu.clear();
+        for (Group group : groupArrayList){
+            menu.add(group.getName());
+        }
+        navView.invalidate();
+    }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.main, menu);
-        return true;
+        return super.onCreateOptionsMenu(menu);
     }
 
     @Override
@@ -131,11 +187,21 @@ public class MainActivity extends BaseActivity
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
+        if (id == R.id.action_sync) {
+            syncCloudDatabase();
             return true;
+        }
+        else{
+
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    private void syncCloudDatabase() {
+        groupArrayList = getGroups();
+        joinODKGroups(groupArrayList);
+        addMenuItemInNavMenuDrawer();
     }
 
     @SuppressWarnings("StatementWithEmptyBody")
@@ -144,19 +210,6 @@ public class MainActivity extends BaseActivity
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
-        if (id == R.id.nav_camera) {
-            // Handle the camera action
-        } else if (id == R.id.nav_gallery) {
-
-        } else if (id == R.id.nav_slideshow) {
-
-        } else if (id == R.id.nav_manage) {
-
-        } else if (id == R.id.nav_share) {
-
-        } else if (id == R.id.nav_send) {
-
-        }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
@@ -193,8 +246,6 @@ public class MainActivity extends BaseActivity
         getDeepLink();
         Log.e("Success", "Database available" + loggedInUsername);
         if(loggedInUsername!=null)name_tv.setText(loggedInUsername);
-
-        getGroups();
     }
 
     @Override
@@ -252,7 +303,9 @@ public class MainActivity extends BaseActivity
                                 URL url = new URL(deepLink.toString());
                                 Map<String, String> map = splitQuery(url);
                                 String id = map.get("id");
-                                new JoinNotificationGroup(MainActivity.this, id,getActiveUser()).execute();
+                                ArrayList<Group> groupArrayList = new ArrayList<>();
+                                groupArrayList.add(new Group(id,0));
+                                new SubscribeNotificationGroup(MainActivity.this,groupArrayList,getActiveUser()).execute();
                             }
                             else {
                                 Log.d(TAG, "getDynamicLink: no link found");
@@ -283,23 +336,33 @@ public class MainActivity extends BaseActivity
         return query_pairs;
     }
 
-    public void getGroups(){
+   public ArrayList<Group> getGroups(){
+        ArrayList<Group> groupsList = new ArrayList<>();
       try {
-            String roles = getDatabase().getRolesList(getAppName());
-            System.out.println(roles);
-        } catch (ServicesAvailabilityException e) {
-            e.printStackTrace();
-        }
+          String roles_array_string = getDatabase().getRolesList(getAppName());
+
+          JSONArray rolesArray = new JSONArray(roles_array_string);
+              for (int i=0;i<rolesArray.length();i++){
+                  if(rolesArray.getString(i).startsWith("GROUP_")|| rolesArray.getString(i).startsWith("ROLE_"))
+                  groupsList.add(new Group(rolesArray.getString(i), 0));
+              }
+
+      } catch (JSONException e) {
+          e.printStackTrace();
+      } catch (ServicesAvailabilityException e) {
+          e.printStackTrace();
+      } catch (NullPointerException e){
+          e.printStackTrace();
+      }
+       return groupsList;
+   }
+
+    public void joinODKGroups(ArrayList<Group> groupArrayList){
+        groupArrayList.add(new Group("All", 0));
+        new UnsubscribeNotificationGroups(this).execute();
+        new SubscribeNotificationGroup(this, groupArrayList, getActiveUser()).execute();
+        dbHandler.newGroupDatabase(groupArrayList);
     }
-
-    public void joinODKGroups(){
-        //TODO: complete this method to make user register to ODK Groups.
-        new JoinNotificationGroup(this, "north", "user1").execute();
-        new JoinNotificationGroup(this, "all", "user1").execute();
-
-    }
-
-
 }
 
 

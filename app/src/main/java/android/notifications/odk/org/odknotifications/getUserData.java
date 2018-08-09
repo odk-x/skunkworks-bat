@@ -24,7 +24,6 @@ public class getUserData extends CommonApplication {
     @Override
     public void onCreate() {
         singleton = this;
-
         super.onCreate();
         analytics = FirebaseAnalytics.getInstance(this);
     }
