@@ -17,8 +17,8 @@ import java.util.ArrayList;
 
 public class NotificationGroupFragment extends Fragment {
 
-    public static final String ARG_GROUP_NAME = "name";
-    private String groupName;
+    public static final String ARG_GROUP_ID = "id";
+    private String groupId;
     private RecyclerView recyclerView;
     ArrayList<Notification> notificationArrayList;
     NotificationAdapter notificationAdapter;
@@ -26,10 +26,10 @@ public class NotificationGroupFragment extends Fragment {
     }
 
 
-    public static NotificationGroupFragment newInstance(String groupName) {
+    public static NotificationGroupFragment newInstance(String groupId) {
         NotificationGroupFragment fragment = new NotificationGroupFragment();
         Bundle args = new Bundle();
-        args.putString(ARG_GROUP_NAME, groupName);
+        args.putString(ARG_GROUP_ID, groupId);
         fragment.setArguments(args);
         return fragment;
     }
@@ -38,14 +38,12 @@ public class NotificationGroupFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
-            groupName = getArguments().getString(ARG_GROUP_NAME);
+            groupId = getArguments().getString(ARG_GROUP_ID);
         }
         notificationArrayList = new ArrayList<>();
-        if(groupName!=null) {
+        if(groupId!=null) {
             DBHandler dbHandler = new DBHandler(getContext(), null, null, 1);
-            notificationArrayList = dbHandler.getNotifications(groupName);
-        }else{
-            System.out.println("NULL");
+            notificationArrayList = dbHandler.getNotifications(groupId);
         }
         notificationAdapter = new NotificationAdapter(notificationArrayList);
         System.out.println("Fragment:"+notificationArrayList.toString());

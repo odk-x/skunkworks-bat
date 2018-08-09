@@ -28,6 +28,11 @@ import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.dynamiclinks.FirebaseDynamicLinks;
 import com.google.firebase.dynamiclinks.PendingDynamicLinkData;
 import com.google.zxing.integration.android.IntentIntegrator;
@@ -65,7 +70,7 @@ public class MainActivity extends AppCompatActivity
     private PropertiesSingleton mPropSingleton;
     private DBHandler dbHandler;
     private ArrayList<Group> groupArrayList;
-    public static final String ARG_GROUP_NAME = "name";
+    public static final String ARG_GROUP_ID = "id";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -136,11 +141,12 @@ public class MainActivity extends AppCompatActivity
     private void addMenuItemInNavMenuDrawer() {
 
         NavigationView navView = (NavigationView) findViewById(R.id.nav_view);
-        ArrayList<Group> groupArrayList = dbHandler.getGroups();
+        groupArrayList = dbHandler.getGroups();
         Menu menu = navView.getMenu();
         menu.clear();
-        for (Group group : groupArrayList){
-            menu.add(group.getName());
+        for (int i =0; i<groupArrayList.size();i++){
+            if(groupArrayList.get(i).getName()!=null)
+            menu.add(0,i,0,groupArrayList.get(i).getName());
         }
         navView.invalidate();
     }
@@ -166,8 +172,32 @@ public class MainActivity extends AppCompatActivity
 
     private void syncCloudDatabase() {
         groupArrayList = getGroups();
+        addGroupsFromFirebase();
         joinODKGroups(groupArrayList);
         addMenuItemInNavMenuDrawer();
+    }
+
+    private void addGroupsFromFirebase() {
+        DatabaseReference mRef  = FirebaseDatabase.getInstance().getReference().child("clients").child(getActiveUser());
+        mRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                for(DataSnapshot group: dataSnapshot.getChildren()){
+                    String name =(String) group.child("name").getValue();
+                    String id = (String) group.child("id").getValue();
+                    Group grp = new  Group(id,name,0);
+                    groupArrayList.add(grp);
+                    new SubscribeNotificationGroup(MainActivity.this, id, getActiveUser());
+                    dbHandler.addNewGroup(grp);
+                }
+                addMenuItemInNavMenuDrawer();
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
     }
 
     @SuppressWarnings("StatementWithEmptyBody")
@@ -176,7 +206,7 @@ public class MainActivity extends AppCompatActivity
         // Handle navigation view item clicks here.
         NotificationGroupFragment fragment = new NotificationGroupFragment();
         Bundle bundle = new Bundle();
-        bundle.putString("name", item.getTitle().toString());
+        bundle.putString(ARG_GROUP_ID, groupArrayList.get(item.getItemId()).getId());
         FragmentManager manager = getSupportFragmentManager();
         fragment.setArguments(bundle);
         FragmentTransaction transaction = manager.beginTransaction();
@@ -275,9 +305,24 @@ public class MainActivity extends AppCompatActivity
                                 URL url = new URL(deepLink.toString());
                                 Map<String, String> map = splitQuery(url);
                                 String id = map.get("id");
-                                ArrayList<Group> groupArrayList = new ArrayList<>();
-                                groupArrayList.add(new Group(id,0));
-                                new SubscribeNotificationGroup(MainActivity.this,groupArrayList,getActiveUser()).execute();
+                                DatabaseReference mRef = FirebaseDatabase.getInstance().getReference();
+                                mRef.child("group").child(id).addListenerForSingleValueEvent(new ValueEventListener() {
+                                    @Override
+                                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                        Group group = new Group((String)dataSnapshot.child("id").getValue(),(String)dataSnapshot.child("name").getValue(),0);
+                                        new SubscribeNotificationGroup(MainActivity.this,group.getId(),getActiveUser()).execute();
+                                        DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference().child("clients").child(getActiveUser()).child("groups");
+                                        databaseReference.child("id").setValue(group.getId());
+                                        databaseReference.child("name").setValue(group.getName());
+                                        dbHandler.addNewGroup(group);
+                                    }
+
+                                    @Override
+                                    public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                                    }
+                                });
+
                             }
                             else {
                                 Log.d(TAG, "getDynamicLink: no link found");
@@ -316,7 +361,7 @@ public class MainActivity extends AppCompatActivity
           JSONArray rolesArray = new JSONArray(roles_array_string);
               for (int i=0;i<rolesArray.length();i++){
                   if(rolesArray.getString(i).startsWith("GROUP_")|| rolesArray.getString(i).startsWith("ROLE_"))
-                  groupsList.add(new Group(rolesArray.getString(i), 0));
+                  groupsList.add(new Group(rolesArray.getString(i), rolesArray.getString(i), 0));
               }
 
       } catch (JSONException e) {
@@ -331,7 +376,9 @@ public class MainActivity extends AppCompatActivity
 
     public void joinODKGroups(ArrayList<Group> groupArrayList){
         new UnsubscribeNotificationGroups(this).execute();
-        new SubscribeNotificationGroup(this, groupArrayList, getActiveUser()).execute();
+        for(Group group: groupArrayList) {
+            new SubscribeNotificationGroup(this, group.getId(), getActiveUser()).execute();
+        }
         dbHandler.newGroupDatabase(groupArrayList);
     }
 }

@@ -1,10 +1,12 @@
 package android.notifications.odk.org.odknotifications.Model;
 
 public class Group {
-    String name;
-    int snoozeNotifications;
+    private String name;
+    private String id;
+    private int snoozeNotifications;
 
-    public Group(String name, int snoozeNotifications) {
+    public Group(String id,String name, int snoozeNotifications) {
+        this.id = id;
         this.name = name;
         this.snoozeNotifications = snoozeNotifications;
     }
@@ -23,5 +25,13 @@ public class Group {
 
     public void setSnoozeNotifications(int snoozeNotifications) {
         this.snoozeNotifications = snoozeNotifications;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 }
