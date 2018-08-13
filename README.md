@@ -2,6 +2,8 @@
 ![Platform](https://img.shields.io/badge/platform-Android-blue.svg)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
+this project is under development.
+
 Skunkworks-bat is an Android app for field workers that receives notifications sent by their supervisors through [skunkworks-parrot](https://github.com/opendatakit/skunkworks-parrot). Skunkworks-bat uses Firebase Cloud Messaging for recieving notifications. It is part of Open Data Kit (ODK), a free and open-source set of tools which help organizations author, field, and manage mobile data collection solutions. Learn more about the Open Data Kit project and its history [here](https://opendatakit.org/about/) and read about example ODK deployments [here](https://opendatakit.org/about/deployments/).
 
 
