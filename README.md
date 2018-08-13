@@ -22,7 +22,7 @@ Skunkworks-bat is an Android app for field workers that receives notifications s
  If you prefer not to use the command line, you can use Android Studio to create a new project from version control using `https://github.com/YOUR-GITHUB-USERNAME/opendatakit/skunkworks-bat`. 
 
 1. Open the project in the folder of your clone from Android Studio. 
-2. Create a Firebase project and add the google-services.json file in your android app module root directory.
+2. Create a Firebase project and add the google-services.json file in your android app module root directory. Step by step instructions for creating a Firebase project can be found [here](https://drive.google.com/open?id=10_9oU_8zrek7lt7BRYmJJwo22rs51uAw). 
 3. To run the project, click on the green arrow at the top of the screen. The emulator is very slow so we generally recommend using a physical device when possible.
 
 ## Prerequisites
