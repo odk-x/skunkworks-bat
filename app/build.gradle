@@ -3,7 +3,7 @@ apply plugin: 'com.android.application'
 android {
     compileSdkVersion 27
     defaultConfig {
-        applicationId "android.notifications.odk.org.odknotifications"
+        applicationId "org.odk.odknotifications"
         minSdkVersion 17
         targetSdkVersion 27
         versionCode 1
@@ -29,6 +29,7 @@ dependencies {
     implementation 'com.firebase:firebase-jobdispatcher:0.8.5'
     implementation 'com.google.firebase:firebase-dynamic-links:16.0.1'
 
+    implementation 'com.android.support:support-v4:27.1.1'
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
@@ -36,5 +37,6 @@ dependencies {
     implementation(group: 'org.opendatakit', name: 'masterBasicAndroidlibrary', version: 'rev224', classifier: 'masterBasicRelease', ext: 'aar')
     implementation(group: 'org.opendatakit', name: 'masterBasicAndroidcommon', version: 'rev224', classifier: 'masterBasicRelease', ext: 'aar')
     implementation 'com.journeyapps:zxing-android-embedded:3.4.0'
+    implementation 'com.android.support:cardview-v7:27.1.1'
 }
 apply plugin: 'com.google.gms.google-services'

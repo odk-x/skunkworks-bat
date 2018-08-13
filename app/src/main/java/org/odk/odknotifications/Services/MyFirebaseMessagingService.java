@@ -1,4 +1,4 @@
-package android.notifications.odk.org.odknotifications;
+package org.odk.odknotifications.Services;
 
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -16,6 +16,11 @@ import com.firebase.jobdispatcher.GooglePlayDriver;
 import com.firebase.jobdispatcher.Job;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
+
+import org.odk.odknotifications.Activities.MainActivity;
+import org.odk.odknotifications.DatabaseCommunicator.DBHandler;
+import org.odk.odknotifications.Model.Notification;
+import org.odk.odknotifications.R;
 
 import java.util.Random;
 
@@ -50,7 +55,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
             Log.e(TAG, "Message data payload: " + remoteMessage.getData());
             // Handle message within 10 seconds
                 handleNow();
-            sendNotification(remoteMessage.getData().get("title"),remoteMessage.getData().get("message"));
+            sendNotification(remoteMessage.getData().get("title"),remoteMessage.getData().get("message"),remoteMessage.getSentTime(), remoteMessage.getData().get("group"));
 
         }
         // Check if message contains a notification payload.
@@ -69,7 +74,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         // [START dispatch_job]
         FirebaseJobDispatcher dispatcher = new FirebaseJobDispatcher(new GooglePlayDriver(this));
         Job myJob = dispatcher.newJobBuilder()
-                .setService(MyJobService.class)
+                .setService(org.odk.odknotifications.Services.MyJobService.class)
                 .setTag("my-job-tag")
                 .build();
         dispatcher.schedule(myJob);
@@ -85,11 +90,13 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
     /**
      * Create and show a simple notification containing the received FCM message.
-     *
+     * @param messageTitle title of message received
      * @param messageBody FCM message body received.
+     * @param date_time date and time when the message was sent
+     * @param group name of group to which message was sent.
      */
 
-    private void sendNotification(String messageTitle, String messageBody) {
+    private void sendNotification(String messageTitle, String messageBody, Long date_time, String group) {
         Intent intent = new Intent(this, MainActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0 /* Request code */, intent,
@@ -120,5 +127,8 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
         assert notificationManager != null;
         notificationManager.notify(new Random().nextInt() /* ID of notification */, notificationBuilder.build());
+        DBHandler dbHandler = new DBHandler(this,null,null,1);
+        dbHandler.addNotification(new Notification(messageTitle,messageBody,date_time,group));
+        System.out.println("Date:"+date_time);
     }
 }
