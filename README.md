@@ -17,7 +17,7 @@ Skunkworks-bat is an Android app for field workers that receives notifications s
 
 1. Clone your fork of the project locally. At the command line:
 
-        git clone https://github.com/YOUR-GITHUB-USERNAME/opendatakit/skunkworks-bat
+        git clone https://github.com/YOUR-GITHUB-USERNAME/skunkworks-bat
 
  If you prefer not to use the command line, you can use Android Studio to create a new project from version control using `https://github.com/YOUR-GITHUB-USERNAME/opendatakit/skunkworks-bat`. 
 
