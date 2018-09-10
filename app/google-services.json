@@ -1,27 +1,27 @@
 {
   "project_info": {
-    "project_number": "668646066907",
-    "firebase_url": "https://odk-notifications.firebaseio.com",
-    "project_id": "odk-notifications",
-    "storage_bucket": "odk-notifications.appspot.com"
+    "project_number": "218572703069",
+    "firebase_url": "https://notification-c98b1.firebaseio.com",
+    "project_id": "notification-c98b1",
+    "storage_bucket": "notification-c98b1.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:668646066907:android:556e0e56c9b12bc2",
+        "mobilesdk_app_id": "1:218572703069:android:f415e73fadc747ce",
         "android_client_info": {
-          "package_name": "android.notifications.odk.org.odknotifications"
+          "package_name": "org.odk.odknotifications"
         }
       },
       "oauth_client": [
         {
-          "client_id": "668646066907-a5iusktqsfh4h7q2jv727p7jndrn9nov.apps.googleusercontent.com",
+          "client_id": "218572703069-0qf3h4rgln6uem3ao1k3c7eaale8a7g7.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyDv8D2Lz3shHD36Ngk059x4F64P0XB24f0"
+          "current_key": "AIzaSyCTkMQX682lsfqtaIasPGQL0KDKRBYEbKo"
         }
       ],
       "services": {
