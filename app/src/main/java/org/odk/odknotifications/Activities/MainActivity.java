@@ -1,7 +1,10 @@
 package org.odk.odknotifications.Activities;
 
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
@@ -11,6 +14,7 @@ import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -22,6 +26,8 @@ import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.FirebaseApp;
+import com.google.firebase.FirebaseOptions;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -34,6 +40,7 @@ import com.google.zxing.integration.android.IntentResult;
 
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 import org.odk.odknotifications.DatabaseCommunicator.DBHandler;
 import org.odk.odknotifications.Fragments.NotificationGroupFragment;
 import org.odk.odknotifications.Model.Group;
@@ -50,6 +57,9 @@ import org.opendatakit.properties.CommonToolProperties;
 import org.opendatakit.properties.PropertiesSingleton;
 import org.opendatakit.utilities.ODKFileUtils;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -62,7 +72,9 @@ import java.util.Map;
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, DatabaseConnectionListener {
 
-    private String appName = "org.odk.odknotifications";
+    //private String appName = "org.odk.odknotifications";
+    public static String appName = ODKFileUtils.getOdkDefaultAppName();
+
     private DatabaseConnectionListener mIOdkDataDatabaseListener;
     private TextView name_tv;
     private String loggedInUsername;
@@ -71,13 +83,18 @@ public class MainActivity extends AppCompatActivity
     private DBHandler dbHandler;
     private ArrayList<Group> groupArrayList;
     public static final String ARG_GROUP_ID = "id";
+    private final int PERMISSION_REQUEST_READ_EXTERNAL_STORAGE_CODE = 1;
 
+    protected static final String[] STORAGE_PERMISSION = new String[] {
+            android.Manifest.permission.READ_EXTERNAL_STORAGE
+    };
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        requestStoragePermission();
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -109,6 +126,24 @@ public class MainActivity extends AppCompatActivity
 
         addMenuItemInNavMenuDrawer();
     }
+
+    public String loadJSONFromAsset() {
+        String json = null;
+        try {
+            File jsonFile = new File(ODKFileUtils.getAssetsFolder(appName)+"/google-services.json");
+            FileInputStream is = new FileInputStream(jsonFile);
+            int size = is.available();
+            byte[] buffer = new byte[size];
+            is.read(buffer);
+            is.close();
+            json = new String(buffer, "UTF-8");
+            Log.e("JSON", json);
+        } catch (IOException ex) {
+            ex.printStackTrace();
+            return null;
+        }
+        return json;
+        }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -380,6 +415,85 @@ public class MainActivity extends AppCompatActivity
             new SubscribeNotificationGroup(this, group.getId(), getActiveUser()).execute();
         }
         dbHandler.newGroupDatabase(groupArrayList);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == PERMISSION_REQUEST_READ_EXTERNAL_STORAGE_CODE) {
+            if (grantResults.length == 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                // Permission has been granted.
+                readConfigFile();
+            }
+            else{
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                builder.setMessage(R.string.storage_permission_rationale)
+                        .setPositiveButton(R.string.allow, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                                    //For pre Marshmallow devices, this wouldn't be called as they don't need runtime permission.
+                                    requestPermissions(
+                                            new String[]{android.Manifest.permission.READ_EXTERNAL_STORAGE},
+                                            PERMISSION_REQUEST_READ_EXTERNAL_STORAGE_CODE);
+                                }
+                            }
+                        })
+                        .setNegativeButton(R.string.not_now, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                Toast.makeText(MainActivity.this, R.string.permission_denied, Toast.LENGTH_SHORT).show();
+                                MainActivity.this.finish();
+                            }
+                        });
+                builder.create().show();
+            }
+        }
+    }
+
+    private void readConfigFile() {
+        try {
+            String json = loadJSONFromAsset();
+            if(json!=null) {
+                JSONObject obj = new JSONObject(json);
+                //System.out.print(obj.toString());
+                String databaseUrl = obj.getJSONObject("project_info").getString("firebase_url");
+                String storageBucket = obj.getJSONObject("project_info").getString("storage_bucket");
+                String applicationId = obj.getJSONArray("client").getJSONObject(0).getJSONObject("client_info").getString("mobilesdk_app_id");
+                String apiKey = obj.getJSONArray("client").getJSONObject(0).getJSONArray("api_key").getJSONObject(0).getString("current_key");
+
+                FirebaseOptions.Builder builder = new FirebaseOptions.Builder()
+                        .setApplicationId(applicationId)
+                        .setApiKey(apiKey)
+                        .setDatabaseUrl(databaseUrl)
+                        .setStorageBucket(storageBucket);
+                FirebaseApp.initializeApp(this, builder.build());
+                }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    private void requestStoragePermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (checkSelfPermission(
+
+                    android.Manifest.permission.READ_EXTERNAL_STORAGE)
+                    != PackageManager.PERMISSION_GRANTED){
+
+                    //For pre Marshmallow devices, this wouldn't be called as they don't need runtime permission.
+                    requestPermissions(
+                            STORAGE_PERMISSION,
+                            PERMISSION_REQUEST_READ_EXTERNAL_STORAGE_CODE
+                    );
+            }
+            else{
+                // Permission has been granted. Read config file.
+                readConfigFile();
+            }
+        }
     }
 }
 

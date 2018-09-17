@@ -22,7 +22,7 @@ dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation 'com.android.support:appcompat-v7:27.1.1'
     implementation 'com.android.support:design:27.1.1'
-    implementation 'com.android.support.constraint:constraint-layout:1.1.0'
+    implementation 'com.android.support.constraint:constraint-layout:1.1.2'
     implementation 'com.google.firebase:firebase-core:16.0.1'
     implementation 'com.google.firebase:firebase-messaging:17.0.0'
     implementation 'com.google.firebase:firebase-database:16.0.1'
@@ -36,7 +36,18 @@ dependencies {
 
     implementation(group: 'org.opendatakit', name: 'masterBasicAndroidlibrary', version: 'rev224', classifier: 'masterBasicRelease', ext: 'aar')
     implementation(group: 'org.opendatakit', name: 'masterBasicAndroidcommon', version: 'rev224', classifier: 'masterBasicRelease', ext: 'aar')
-    implementation 'com.journeyapps:zxing-android-embedded:3.4.0'
+    implementation 'com.journeyapps:zxing-android-embedded:3.5.0'
     implementation 'com.android.support:cardview-v7:27.1.1'
 }
 apply plugin: 'com.google.gms.google-services'
+
+configurations.all {
+    resolutionStrategy.eachDependency { DependencyResolveDetails details ->
+        def requested = details.requested
+        if (requested.group == 'com.android.support') {
+            if (!requested.name.startsWith("multidex")) {
+                details.useVersion '27.1.0'
+            }
+        }
+    }
+}

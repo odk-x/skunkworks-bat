@@ -11,5 +11,9 @@
     <string name="general_preferences">dummy</string>
     <string name="sync_not_found">dummy</string>
     <string name="sync">Sync</string>
+    <string name="not_now">not now</string>
+    <string name="storage_permission_rationale">ODK Notification requires Storage Permission to access config files.</string>
+    <string name="allow">Allow</string>
+    <string name="permission_denied">Permission denied</string>
 
 </resources>
