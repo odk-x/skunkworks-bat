@@ -96,9 +96,6 @@ public class MainActivity extends AppCompatActivity
         setSupportActionBar(toolbar);
         requestStoragePermission();
 
-        //Initialize firebaseApp instance
-        FirebaseApp.initializeApp(this);
-
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -114,7 +111,7 @@ public class MainActivity extends AppCompatActivity
         if (appName == null) {
             appName = ODKFileUtils.getOdkDefaultAppName();
         }
-        MainActivity.appName = appName;
+        this.appName = appName;
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -218,7 +215,6 @@ public class MainActivity extends AppCompatActivity
     private void addGroupsFromFirebase() {
         DatabaseReference mRef  = FirebaseDatabase.getInstance().getReference().child("clients").child(getActiveUser());
 
-        Log.v("REF" , mRef.toString());
         mRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
