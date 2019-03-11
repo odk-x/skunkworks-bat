@@ -2,7 +2,7 @@ package org.odk.odknotifications;
 
 import android.app.ProgressDialog;
 import android.os.AsyncTask;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 import android.util.Log;
 
 import com.google.android.gms.tasks.OnCompleteListener;
