@@ -20,24 +20,24 @@ android {
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    implementation 'androidx.appcompat:appcompat:1.0.0-beta01'
-    implementation 'com.google.android.material:material:1.0.0-beta01'
+    implementation 'androidx.appcompat:appcompat:1.0.2'
+    implementation 'com.google.android.material:material:1.0.0'
     implementation 'androidx.constraintlayout:constraintlayout:1.1.3'
-    implementation 'com.google.firebase:firebase-core:16.0.1'
-    implementation 'com.google.firebase:firebase-messaging:17.0.0'
-    implementation 'com.google.firebase:firebase-database:16.0.1'
+    implementation 'com.google.firebase:firebase-core:16.0.7'
+    implementation 'com.google.firebase:firebase-messaging:17.4.0'
+    implementation 'com.google.firebase:firebase-database:16.1.0'
     implementation 'com.firebase:firebase-jobdispatcher:0.8.5'
-    implementation 'com.google.firebase:firebase-dynamic-links:16.0.1'
+    implementation 'com.google.firebase:firebase-dynamic-links:16.1.7'
 
-    implementation 'androidx.legacy:legacy-support-v4:1.0.0-beta01'
+    implementation 'androidx.legacy:legacy-support-v4:1.0.0'
     testImplementation 'junit:junit:4.12'
-    androidTestImplementation 'androidx.test:runner:1.1.0-alpha4'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.1.0-alpha4'
+    androidTestImplementation 'androidx.test:runner:1.1.1'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.1.1'
 
     implementation(group: 'org.opendatakit', name: 'masterBasicAndroidlibrary', version: 'rev224', classifier: 'masterBasicRelease', ext: 'aar')
     implementation(group: 'org.opendatakit', name: 'masterBasicAndroidcommon', version: 'rev224', classifier: 'masterBasicRelease', ext: 'aar')
     implementation 'com.journeyapps:zxing-android-embedded:3.5.0'
-    implementation 'androidx.cardview:cardview:1.0.0-beta01'
+    implementation 'androidx.cardview:cardview:1.0.0'
 }
 apply plugin: 'com.google.gms.google-services'
 
