@@ -2,14 +2,17 @@ package org.odk.odknotifications;
 
 import android.app.ProgressDialog;
 import android.os.AsyncTask;
+
 import com.google.firebase.iid.FirebaseInstanceId;
-import org.odk.odknotifications.Activities.MainActivity;
+
+import org.odk.odknotifications.activities.MainActivity;
+
 import java.io.IOException;
 
 public class UnsubscribeNotificationGroups extends AsyncTask<Void, Void, Void> {
     private ProgressDialog dialog;
 
-    public UnsubscribeNotificationGroups(MainActivity activity){
+    public UnsubscribeNotificationGroups(MainActivity activity) {
         dialog = new ProgressDialog(activity);
     }
 
@@ -31,7 +34,7 @@ public class UnsubscribeNotificationGroups extends AsyncTask<Void, Void, Void> {
     }
 
     @Override
-    protected void onPostExecute (Void result){
+    protected void onPostExecute(Void result) {
         super.onPostExecute(result);
         if (dialog.isShowing()) {
             dialog.dismiss();

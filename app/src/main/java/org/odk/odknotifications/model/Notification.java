@@ -1,12 +1,13 @@
-package org.odk.odknotifications.Model;
+package org.odk.odknotifications.model;
 
 import java.text.SimpleDateFormat;
+import java.util.Locale;
 
 public class Notification {
-    String title;
-    String message;
-    Long date;
-    String group;
+    private String title;
+    private String message;
+    private Long date;
+    private String group;
 
     public Notification(String title, String message, Long date, String group) {
         this.title = title;
@@ -47,7 +48,7 @@ public class Notification {
         this.group = group;
     }
 
-    public String getStringDate(){
-        return  new SimpleDateFormat("HH:mm dd/MM/yyyy").format(date);
+    public String getStringDate() {
+        return new SimpleDateFormat("HH:mm dd/MM/yyyy", Locale.getDefault()).format(date);
     }
 }

@@ -1,11 +1,14 @@
-package org.odk.odknotifications.Adapters;
+package org.odk.odknotifications.adapters;
 
+import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
-import org.odk.odknotifications.Model.Notification;
+
+import org.odk.odknotifications.model.Notification;
 import org.odk.odknotifications.R;
 
 import java.util.List;
@@ -15,14 +18,16 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
 
     private List<Notification> notifications;
 
-    public class MyViewHolder extends RecyclerView.ViewHolder {
-        public TextView title, message, date;
+    class MyViewHolder extends RecyclerView.ViewHolder {
+        TextView title;
+        TextView message;
+        TextView date;
 
         MyViewHolder(View view) {
             super(view);
-            title = (TextView) view.findViewById(R.id.title);
-            message = (TextView) view.findViewById(R.id.message);
-            date = (TextView) view.findViewById(R.id.date);
+            title = view.findViewById(R.id.title);
+            message = view.findViewById(R.id.message);
+            date = view.findViewById(R.id.date);
         }
     }
 
@@ -31,8 +36,9 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
         this.notifications = notifications;
     }
 
+    @NonNull
     @Override
-    public MyViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public MyViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View itemView = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.single_notification, parent, false);
 
@@ -40,7 +46,7 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
     }
 
     @Override
-    public void onBindViewHolder(MyViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull MyViewHolder holder, int position) {
         Notification notification = notifications.get(position);
         holder.title.setText(notification.getTitle());
         holder.message.setText(notification.getMessage());

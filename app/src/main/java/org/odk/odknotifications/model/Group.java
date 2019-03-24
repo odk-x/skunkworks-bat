@@ -1,11 +1,11 @@
-package org.odk.odknotifications.Model;
+package org.odk.odknotifications.model;
 
 public class Group {
     private String name;
     private String id;
     private int snoozeNotifications;
 
-    public Group(String id,String name, int snoozeNotifications) {
+    public Group(String id, String name, int snoozeNotifications) {
         this.id = id;
         this.name = name;
         this.snoozeNotifications = snoozeNotifications;

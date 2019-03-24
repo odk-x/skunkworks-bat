@@ -1,14 +1,18 @@
-package org.odk.odknotifications.Activities;
+package org.odk.odknotifications.activities;
 
+import android.annotation.TargetApi;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+
 import androidx.annotation.NonNull;
+
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
+
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.core.view.GravityCompat;
@@ -17,6 +21,7 @@ import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -41,9 +46,9 @@ import com.google.zxing.integration.android.IntentResult;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.odk.odknotifications.DatabaseCommunicator.DBHandler;
-import org.odk.odknotifications.Fragments.NotificationGroupFragment;
-import org.odk.odknotifications.Model.Group;
+import org.odk.odknotifications.databasecommunicator.DBHandler;
+import org.odk.odknotifications.fragments.NotificationGroupFragment;
+import org.odk.odknotifications.model.Group;
 import org.odk.odknotifications.R;
 import org.odk.odknotifications.SubscribeNotificationGroup;
 import org.odk.odknotifications.UnsubscribeNotificationGroups;
@@ -64,6 +69,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -78,25 +84,27 @@ public class MainActivity extends AppCompatActivity
     private DatabaseConnectionListener mIOdkDataDatabaseListener;
     private TextView name_tv;
     private String loggedInUsername;
-    private String TAG = "ODK Notifications";
+    private final String TAG = "ODK Notifications";
     private PropertiesSingleton mPropSingleton;
     private DBHandler dbHandler;
     private ArrayList<Group> groupArrayList;
     public static final String ARG_GROUP_ID = "id";
     private final int PERMISSION_REQUEST_READ_EXTERNAL_STORAGE_CODE = 1;
 
-    protected static final String[] STORAGE_PERMISSION = new String[] {
+    protected static final String[] STORAGE_PERMISSION = new String[]{
             android.Manifest.permission.READ_EXTERNAL_STORAGE
     };
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        FirebaseApp.initializeApp(this);
         setSupportActionBar(toolbar);
         requestStoragePermission();
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -105,45 +113,46 @@ public class MainActivity extends AppCompatActivity
             }
         });
 
-        dbHandler = new DBHandler(this,null,null,1);
+        dbHandler = new DBHandler(this, null, null, 1);
 
         String appName = getIntent().getStringExtra(IntentConsts.INTENT_KEY_APP_NAME);
         if (appName == null) {
             appName = ODKFileUtils.getOdkDefaultAppName();
         }
-        this.appName = appName;
+        MainActivity.appName = appName;
 
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.addDrawerListener(toggle);
         toggle.syncState();
 
-        final NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        final NavigationView navigationView = findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
         View headerView = navigationView.getHeaderView(0);
-        name_tv = (TextView) headerView.findViewById(R.id.name_tv);
+        name_tv = headerView.findViewById(R.id.name_tv);
 
         addMenuItemInNavMenuDrawer();
     }
 
+    @TargetApi(Build.VERSION_CODES.KITKAT)
     public String loadJSONFromAsset() {
-        String json = null;
+        String json;
         try {
-            File jsonFile = new File(ODKFileUtils.getAssetsFolder(appName)+"/google-services.json");
+            File jsonFile = new File(ODKFileUtils.getAssetsFolder(appName) + "/google-services.json");
             FileInputStream is = new FileInputStream(jsonFile);
             int size = is.available();
             byte[] buffer = new byte[size];
             is.read(buffer);
             is.close();
-            json = new String(buffer, "UTF-8");
+            json = new String(buffer, StandardCharsets.UTF_8);
             Log.e("JSON", json);
         } catch (IOException ex) {
             ex.printStackTrace();
             return null;
         }
         return json;
-        }
+    }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -154,9 +163,9 @@ public class MainActivity extends AppCompatActivity
                 Toast.makeText(this, "Result Not Found", Toast.LENGTH_LONG).show();
             } else {
                 //if qr contains data
-               String link = result.getContents();
-               Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(link));
-               startActivity(browserIntent);
+                String link = result.getContents();
+                Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(link));
+                startActivity(browserIntent);
             }
         } else {
             super.onActivityResult(requestCode, resultCode, data);
@@ -165,7 +174,7 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onBackPressed() {
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
         } else {
@@ -175,13 +184,13 @@ public class MainActivity extends AppCompatActivity
 
     private void addMenuItemInNavMenuDrawer() {
 
-        NavigationView navView = (NavigationView) findViewById(R.id.nav_view);
+        NavigationView navView = findViewById(R.id.nav_view);
         groupArrayList = dbHandler.getGroups();
         Menu menu = navView.getMenu();
         menu.clear();
-        for (int i =0; i<groupArrayList.size();i++){
-            if(groupArrayList.get(i).getName()!=null)
-            menu.add(0,i,0,groupArrayList.get(i).getName());
+        for (int i = 0; i < groupArrayList.size(); i++) {
+            if (groupArrayList.get(i).getName() != null)
+                menu.add(0, i, 0, groupArrayList.get(i).getName());
         }
         navView.invalidate();
     }
@@ -213,15 +222,15 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void addGroupsFromFirebase() {
-        DatabaseReference mRef  = FirebaseDatabase.getInstance().getReference().child("clients").child(getActiveUser());
+        DatabaseReference mRef = FirebaseDatabase.getInstance().getReference().child("clients").child(getActiveUser());
 
         mRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                for(DataSnapshot group: dataSnapshot.getChildren()){
-                    String name =(String) group.child("name").getValue();
+                for (DataSnapshot group : dataSnapshot.getChildren()) {
+                    String name = (String) group.child("name").getValue();
                     String id = (String) group.child("id").getValue();
-                    Group grp = new  Group(id,name,0);
+                    Group grp = new Group(id, name, 0);
                     groupArrayList.add(grp);
                     new SubscribeNotificationGroup(MainActivity.this, id, getActiveUser());
                     dbHandler.addNewGroup(grp);
@@ -238,7 +247,7 @@ public class MainActivity extends AppCompatActivity
 
     @SuppressWarnings("StatementWithEmptyBody")
     @Override
-    public boolean onNavigationItemSelected(MenuItem item) {
+    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         // Handle navigation view item clicks here.
         NotificationGroupFragment fragment = new NotificationGroupFragment();
         Bundle bundle = new Bundle();
@@ -246,10 +255,10 @@ public class MainActivity extends AppCompatActivity
         FragmentManager manager = getSupportFragmentManager();
         fragment.setArguments(bundle);
         FragmentTransaction transaction = manager.beginTransaction();
-        transaction.replace(R.id.container,fragment);
+        transaction.replace(R.id.container, fragment);
         transaction.commit();
 
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }
@@ -270,7 +279,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     public String getAppName() {
-        return this.appName;
+        return appName;
     }
 
 
@@ -283,7 +292,7 @@ public class MainActivity extends AppCompatActivity
         loggedInUsername = getActiveUser();
         getDeepLink();
         Log.e("Success", "Database available" + loggedInUsername);
-        if(loggedInUsername!=null)name_tv.setText(loggedInUsername);
+        if (loggedInUsername != null) name_tv.setText(loggedInUsername);
     }
 
     @Override
@@ -322,7 +331,7 @@ public class MainActivity extends AppCompatActivity
         super.onDestroy();
     }
 
-    public void getDeepLink(){
+    public void getDeepLink() {
         FirebaseDynamicLinks.getInstance()
                 .getDynamicLink(getIntent())
                 .addOnSuccessListener(this, new OnSuccessListener<PendingDynamicLinkData>() {
@@ -337,30 +346,31 @@ public class MainActivity extends AppCompatActivity
                         }
 
                         try {
-                            if(deepLink!=null) {
+                            if (deepLink != null) {
                                 URL url = new URL(deepLink.toString());
                                 Map<String, String> map = splitQuery(url);
                                 String id = map.get("id");
                                 DatabaseReference mRef = FirebaseDatabase.getInstance().getReference();
-                                mRef.child("group").child(id).addListenerForSingleValueEvent(new ValueEventListener() {
-                                    @Override
-                                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                                        Group group = new Group((String)dataSnapshot.child("id").getValue(),(String)dataSnapshot.child("name").getValue(),0);
-                                        new SubscribeNotificationGroup(MainActivity.this,group.getId(),getActiveUser()).execute();
-                                        DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference().child("clients").child(getActiveUser()).child("groups");
-                                        databaseReference.child("id").setValue(group.getId());
-                                        databaseReference.child("name").setValue(group.getName());
-                                        dbHandler.addNewGroup(group);
-                                    }
+                                if (id != null) {
+                                    mRef.child("group").child(id).addListenerForSingleValueEvent(new ValueEventListener() {
+                                        @Override
+                                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                            Group group = new Group((String) dataSnapshot.child("id").getValue(), (String) dataSnapshot.child("name").getValue(), 0);
+                                            new SubscribeNotificationGroup(MainActivity.this, group.getId(), getActiveUser()).execute();
+                                            DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference().child("clients").child(getActiveUser()).child("groups");
+                                            databaseReference.child("id").setValue(group.getId());
+                                            databaseReference.child("name").setValue(group.getName());
+                                            dbHandler.addNewGroup(group);
+                                        }
 
-                                    @Override
-                                    public void onCancelled(@NonNull DatabaseError databaseError) {
+                                        @Override
+                                        public void onCancelled(@NonNull DatabaseError databaseError) {
 
-                                    }
-                                });
+                                        }
+                                    });
+                                }
 
-                            }
-                            else {
+                            } else {
                                 Log.d(TAG, "getDynamicLink: no link found");
                             }
                         } catch (MalformedURLException e) {
@@ -379,7 +389,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     public static Map<String, String> splitQuery(URL url) throws UnsupportedEncodingException {
-        Map<String, String> query_pairs = new LinkedHashMap<String, String>();
+        Map<String, String> query_pairs = new LinkedHashMap<>();
         String query = url.getQuery();
         String[] pairs = query.split("&");
         for (String pair : pairs) {
@@ -389,30 +399,30 @@ public class MainActivity extends AppCompatActivity
         return query_pairs;
     }
 
-   public ArrayList<Group> getGroups(){
+    public ArrayList<Group> getGroups() {
         ArrayList<Group> groupsList = new ArrayList<>();
-      try {
-          String roles_array_string = getDatabase().getRolesList(getAppName());
+        try {
+            String roles_array_string = getDatabase().getRolesList(getAppName());
 
-          JSONArray rolesArray = new JSONArray(roles_array_string);
-              for (int i=0;i<rolesArray.length();i++){
-                  if(rolesArray.getString(i).startsWith("GROUP_")|| rolesArray.getString(i).startsWith("ROLE_"))
-                  groupsList.add(new Group(rolesArray.getString(i), rolesArray.getString(i), 0));
-              }
+            JSONArray rolesArray = new JSONArray(roles_array_string);
+            for (int i = 0; i < rolesArray.length(); i++) {
+                if (rolesArray.getString(i).startsWith("GROUP_") || rolesArray.getString(i).startsWith("ROLE_"))
+                    groupsList.add(new Group(rolesArray.getString(i), rolesArray.getString(i), 0));
+            }
 
-      } catch (JSONException e) {
-          e.printStackTrace();
-      } catch (ServicesAvailabilityException e) {
-          e.printStackTrace();
-      } catch (NullPointerException e){
-          e.printStackTrace();
-      }
-       return groupsList;
-   }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        } catch (ServicesAvailabilityException e) {
+            e.printStackTrace();
+        } catch (NullPointerException e) {
+            e.printStackTrace();
+        }
+        return groupsList;
+    }
 
-    public void joinODKGroups(ArrayList<Group> groupArrayList){
+    public void joinODKGroups(ArrayList<Group> groupArrayList) {
         new UnsubscribeNotificationGroups(this).execute();
-        for(Group group: groupArrayList) {
+        for (Group group : groupArrayList) {
             new SubscribeNotificationGroup(this, group.getId(), getActiveUser()).execute();
         }
         dbHandler.newGroupDatabase(groupArrayList);
@@ -426,8 +436,7 @@ public class MainActivity extends AppCompatActivity
             if (grantResults.length == 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 // Permission has been granted.
                 readConfigFile();
-            }
-            else{
+            } else {
                 AlertDialog.Builder builder = new AlertDialog.Builder(this);
                 builder.setMessage(R.string.storage_permission_rationale)
                         .setPositiveButton(R.string.allow, new DialogInterface.OnClickListener() {
@@ -456,7 +465,7 @@ public class MainActivity extends AppCompatActivity
     private void readConfigFile() {
         try {
             String json = loadJSONFromAsset();
-            if(json!=null) {
+            if (json != null) {
                 JSONObject obj = new JSONObject(json);
                 //System.out.print(obj.toString());
                 String databaseUrl = obj.getJSONObject("project_info").getString("firebase_url");
@@ -470,7 +479,7 @@ public class MainActivity extends AppCompatActivity
                         .setDatabaseUrl(databaseUrl)
                         .setStorageBucket(storageBucket);
                 FirebaseApp.initializeApp(this, builder.build());
-                }
+            }
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -482,15 +491,14 @@ public class MainActivity extends AppCompatActivity
             if (checkSelfPermission(
 
                     android.Manifest.permission.READ_EXTERNAL_STORAGE)
-                    != PackageManager.PERMISSION_GRANTED){
+                    != PackageManager.PERMISSION_GRANTED) {
 
-                    //For pre Marshmallow devices, this wouldn't be called as they don't need runtime permission.
-                    requestPermissions(
-                            STORAGE_PERMISSION,
-                            PERMISSION_REQUEST_READ_EXTERNAL_STORAGE_CODE
-                    );
-            }
-            else{
+                //For pre Marshmallow devices, this wouldn't be called as they don't need runtime permission.
+                requestPermissions(
+                        STORAGE_PERMISSION,
+                        PERMISSION_REQUEST_READ_EXTERNAL_STORAGE_CODE
+                );
+            } else {
                 // Permission has been granted. Read config file.
                 readConfigFile();
             }

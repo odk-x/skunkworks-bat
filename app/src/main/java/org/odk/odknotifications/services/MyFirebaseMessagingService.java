@@ -1,4 +1,4 @@
-package org.odk.odknotifications.Services;
+package org.odk.odknotifications.services;
 
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -8,7 +8,9 @@ import android.content.Intent;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Build;
+
 import androidx.core.app.NotificationCompat;
+
 import android.util.Log;
 
 import com.firebase.jobdispatcher.FirebaseJobDispatcher;
@@ -17,9 +19,9 @@ import com.firebase.jobdispatcher.Job;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 
-import org.odk.odknotifications.Activities.MainActivity;
-import org.odk.odknotifications.DatabaseCommunicator.DBHandler;
-import org.odk.odknotifications.Model.Notification;
+import org.odk.odknotifications.activities.MainActivity;
+import org.odk.odknotifications.databasecommunicator.DBHandler;
+import org.odk.odknotifications.model.Notification;
 import org.odk.odknotifications.R;
 
 import java.util.Random;
@@ -54,8 +56,8 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         if (remoteMessage.getData().size() > 0) {
             Log.e(TAG, "Message data payload: " + remoteMessage.getData());
             // Handle message within 10 seconds
-                handleNow();
-            sendNotification(remoteMessage.getData().get("title"),remoteMessage.getData().get("message"),remoteMessage.getSentTime(), remoteMessage.getData().get("group"));
+            handleNow();
+            sendNotification(remoteMessage.getData().get("title"), remoteMessage.getData().get("message"), remoteMessage.getSentTime(), remoteMessage.getData().get("group"));
 
         }
         // Check if message contains a notification payload.
@@ -74,7 +76,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         // [START dispatch_job]
         FirebaseJobDispatcher dispatcher = new FirebaseJobDispatcher(new GooglePlayDriver(this));
         Job myJob = dispatcher.newJobBuilder()
-                .setService(org.odk.odknotifications.Services.MyJobService.class)
+                .setService(org.odk.odknotifications.services.MyJobService.class)
                 .setTag("my-job-tag")
                 .build();
         dispatcher.schedule(myJob);
@@ -90,10 +92,11 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
     /**
      * Create and show a simple notification containing the received FCM message.
+     *
      * @param messageTitle title of message received
-     * @param messageBody FCM message body received.
-     * @param date_time date and time when the message was sent
-     * @param group name of group to which message was sent.
+     * @param messageBody  FCM message body received.
+     * @param date_time    date and time when the message was sent
+     * @param group        name of group to which message was sent.
      */
 
     private void sendNotification(String messageTitle, String messageBody, Long date_time, String group) {
@@ -103,7 +106,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                 PendingIntent.FLAG_ONE_SHOT);
 
         String channelId = getString(R.string.default_notification_channel_id);
-        Uri defaultSoundUri= RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+        Uri defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
         NotificationCompat.Builder notificationBuilder =
                 new NotificationCompat.Builder(this, channelId)
                         .setSmallIcon(R.drawable.ic_notification_icon)
@@ -127,8 +130,8 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
         assert notificationManager != null;
         notificationManager.notify(new Random().nextInt() /* ID of notification */, notificationBuilder.build());
-        DBHandler dbHandler = new DBHandler(this,null,null,1);
-        dbHandler.addNotification(new Notification(messageTitle,messageBody,date_time,group));
-        System.out.println("Date:"+date_time);
+        DBHandler dbHandler = new DBHandler(this, null, null, 1);
+        dbHandler.addNotification(new Notification(messageTitle, messageBody, date_time, group));
+        System.out.println("Date:" + date_time);
     }
 }
