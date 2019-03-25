@@ -31,10 +31,10 @@ references:
     persist_to_workspace:
       root: *workspace
       paths:
-      - skunkworks_bat/build/outputs/androidTest-results
-      - skunkworks_bat/build/outputs/apk
-      - skunkworks_bat/build/outputs/code-coverage
-      - skunkworks_bat/build/test-results
+      - app/build/outputs/androidTest-results
+      - app/build/outputs/apk
+      - app/build/outputs/code-coverage
+      - app/build/test-results
 
   ## Docker image configurations
 
@@ -63,8 +63,9 @@ jobs:
     - run:
         name: Run code quality checks
         command: ./gradlew checkCode
+        path:
     - store_artifacts:
-        path: skunkworks_bat/build/reports
+        path: app/build/reports
         destination: reports
     - run:
         name: Assemble debug and test builds
@@ -90,10 +91,10 @@ jobs:
         command: ./gradlew testDebugUnitTest
     - *persist_debug_workspace
     - store_artifacts:
-        path: skunkworks_bat/build/reports
+        path: app/build/reports
         destination: reports
     - store_test_results:
-        path: skunkworks_bat/build/test-results
+        path: app/build/test-results
 
 workflows:
   version: 2
