@@ -17,6 +17,8 @@ import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+
+import android.os.PersistableBundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -83,7 +85,9 @@ public class MainActivity extends AppCompatActivity
     private DBHandler dbHandler;
     private ArrayList<Group> groupArrayList;
     public static final String ARG_GROUP_ID = "id";
+    private static final String FIREBASE_INITIALIZED = "firebase_initialised";
     private final int PERMISSION_REQUEST_READ_EXTERNAL_STORAGE_CODE = 1;
+    private boolean hasBeenInitialized = false;
 
     protected static final String[] STORAGE_PERMISSION = new String[] {
             android.Manifest.permission.READ_EXTERNAL_STORAGE
@@ -91,6 +95,9 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        if (savedInstanceState != null) {
+            hasBeenInitialized = savedInstanceState.getBoolean(FIREBASE_INITIALIZED, false);
+        }
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -127,6 +134,12 @@ public class MainActivity extends AppCompatActivity
         addMenuItemInNavMenuDrawer();
     }
 
+    @Override
+    public void onSaveInstanceState(Bundle outState, PersistableBundle outPersistentState) {
+        outState.putBoolean(FIREBASE_INITIALIZED,hasBeenInitialized);
+        super.onSaveInstanceState(outState, outPersistentState);
+    }
+
     public String loadJSONFromAsset() {
         String json = null;
         try {
@@ -139,6 +152,11 @@ public class MainActivity extends AppCompatActivity
             json = new String(buffer, "UTF-8");
             Log.e("JSON", json);
         } catch (IOException ex) {
+            AlertDialog.Builder alertDialog = new AlertDialog.Builder(this);
+            alertDialog.setTitle(getString(R.string.error));
+            alertDialog.setMessage(getString(R.string.json_file_missing_error_message));
+            alertDialog.setIcon(R.drawable.ic_error_red_24dp);
+            alertDialog.show();
             ex.printStackTrace();
             return null;
         }
@@ -281,7 +299,9 @@ public class MainActivity extends AppCompatActivity
             mIOdkDataDatabaseListener.databaseAvailable();
         }
         loggedInUsername = getActiveUser();
-        getDeepLink();
+        if(hasBeenInitialized){
+            getDeepLink();
+        }
         Log.e("Success", "Database available" + loggedInUsername);
         if(loggedInUsername!=null)name_tv.setText(loggedInUsername);
     }
@@ -323,6 +343,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     public void getDeepLink(){
+
         FirebaseDynamicLinks.getInstance()
                 .getDynamicLink(getIntent())
                 .addOnSuccessListener(this, new OnSuccessListener<PendingDynamicLinkData>() {
@@ -425,7 +446,9 @@ public class MainActivity extends AppCompatActivity
         if (requestCode == PERMISSION_REQUEST_READ_EXTERNAL_STORAGE_CODE) {
             if (grantResults.length == 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 // Permission has been granted.
-                readConfigFile();
+                if (!hasBeenInitialized) {
+                    readConfigFile();
+                }
             }
             else{
                 AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -470,7 +493,8 @@ public class MainActivity extends AppCompatActivity
                         .setDatabaseUrl(databaseUrl)
                         .setStorageBucket(storageBucket);
                 FirebaseApp.initializeApp(this, builder.build());
-                }
+                hasBeenInitialized = true;
+            }
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -492,10 +516,14 @@ public class MainActivity extends AppCompatActivity
             }
             else{
                 // Permission has been granted. Read config file.
-                readConfigFile();
+                if (!hasBeenInitialized) {
+                    readConfigFile();
+                }
+
             }
         }
     }
+
 }
 
 

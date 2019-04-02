@@ -15,5 +15,7 @@
     <string name="storage_permission_rationale">ODK Notification requires Storage Permission to access config files.</string>
     <string name="allow">Allow</string>
     <string name="permission_denied">Permission denied</string>
+    <string name="error">Error</string>
+    <string name="json_file_missing_error_message">Server has not been configured correctly. Please, check the server settings in ODK Services.</string>
 
 </resources>
