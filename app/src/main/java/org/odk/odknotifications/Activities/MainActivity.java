@@ -18,7 +18,6 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
-import android.os.PersistableBundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -86,7 +85,6 @@ public class MainActivity extends AppCompatActivity
     private DBHandler dbHandler;
     private ArrayList<Group> groupArrayList;
     public static final String ARG_GROUP_ID = "id";
-    private static final String FIREBASE_INITIALIZED = "firebase_initialised";
     private final int PERMISSION_REQUEST_READ_EXTERNAL_STORAGE_CODE = 1;
     private boolean hasBeenInitialized = false;
 
