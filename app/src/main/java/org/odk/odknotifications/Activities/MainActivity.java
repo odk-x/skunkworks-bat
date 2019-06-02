@@ -18,7 +18,6 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
-import android.os.PersistableBundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -68,6 +67,7 @@ import java.net.URL;
 import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 
@@ -85,7 +85,6 @@ public class MainActivity extends AppCompatActivity
     private DBHandler dbHandler;
     private ArrayList<Group> groupArrayList;
     public static final String ARG_GROUP_ID = "id";
-    private static final String FIREBASE_INITIALIZED = "firebase_initialised";
     private final int PERMISSION_REQUEST_READ_EXTERNAL_STORAGE_CODE = 1;
     private boolean hasBeenInitialized = false;
 
@@ -95,8 +94,11 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (savedInstanceState != null) {
-            hasBeenInitialized = savedInstanceState.getBoolean(FIREBASE_INITIALIZED, false);
+        List<FirebaseApp> firebaseApps = FirebaseApp.getApps(this);
+        for(FirebaseApp app : firebaseApps){
+            if(app.getName().equals(FirebaseApp.DEFAULT_APP_NAME)){
+                hasBeenInitialized=true;
+            }
         }
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -132,12 +134,6 @@ public class MainActivity extends AppCompatActivity
         name_tv = (TextView) headerView.findViewById(R.id.name_tv);
 
         addMenuItemInNavMenuDrawer();
-    }
-
-    @Override
-    public void onSaveInstanceState(Bundle outState, PersistableBundle outPersistentState) {
-        outState.putBoolean(FIREBASE_INITIALIZED,hasBeenInitialized);
-        super.onSaveInstanceState(outState, outPersistentState);
     }
 
     public String loadJSONFromAsset() {
