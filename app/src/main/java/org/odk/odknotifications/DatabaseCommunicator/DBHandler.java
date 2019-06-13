@@ -125,6 +125,31 @@ public class DBHandler extends SQLiteOpenHelper {
         return  notificationArrayList;
     }
 
+    public ArrayList<Notification> getAllNotifications() {
+        ArrayList<Notification> notificationArrayList = new ArrayList<>();
+        SQLiteDatabase db = getWritableDatabase();
+        String query = "SELECT * FROM "+ TABLE_NOTIFICATIONS + ";";
+        System.out.println(query);
+
+        Cursor c = db.rawQuery(query,null);
+        c.moveToFirst();
+
+        while(!c.isAfterLast()){
+            if(c.getString(c.getColumnIndex(COLUMN_TITLE))!=null){
+                String title = c.getString(c.getColumnIndex(COLUMN_TITLE));
+                String message = c.getString(c.getColumnIndex(COLUMN_MESSAGE));
+                Long date = Long.parseLong(c.getString(c.getColumnIndex(COLUMN_DATE)));
+                String group = c.getString(c.getColumnIndex(COLUMN_GRP_ID));
+                notificationArrayList.add(new Notification(title,message,date,group));
+            }
+            c.moveToNext();
+        }
+        db.close();
+        c.close();
+        System.out.println(notificationArrayList);
+        return  notificationArrayList;
+    }
+
     public void addNotification(Notification notification){
         ContentValues values = new ContentValues();
         values.put(COLUMN_TITLE, notification.getTitle());
