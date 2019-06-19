@@ -6,6 +6,7 @@ import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.fragment.app.Fragment;
 
 import android.content.Context;
+import android.os.Bundle;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Spinner;
@@ -14,7 +15,6 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 
 import org.odk.odknotifications.Listeners.FilterNotificationListener;
-import org.odk.odknotifications.Model.Group;
 import org.odk.odknotifications.R;
 
 import java.util.ArrayList;
@@ -26,17 +26,33 @@ import static android.R.layout.simple_spinner_item;
  */
 public class FilterNotificationDialogFragment extends BottomSheetDialogFragment {
 
-    private ArrayList<Group> groupArrayList;
+    private static final String ARG_FILTERED_GRP="filtered_grp";
+    private static final String ARG_GRP_LIST = "group_list";
+
+    private ArrayList<String> groupNameList;
     private Spinner spinner;
     private String filteredGrp;
     private FilterNotificationListener listener;
-    private Context context;
 
-    public FilterNotificationDialogFragment(ArrayList<Group> groupArrayList, String filteredGrp, FilterNotificationListener listener, Context context){
-        this.groupArrayList = groupArrayList;
-        this.filteredGrp = filteredGrp;
-        this.listener = listener;
-        this.context = context;
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        listener = (FilterNotificationListener) context;
+    }
+
+    @Override
+    public void onDetach() {
+        listener = null;
+        super.onDetach();
+    }
+
+    public static FilterNotificationDialogFragment newInstance(ArrayList<String> groupNameList, String filteredGrp) {
+        final FilterNotificationDialogFragment fragment = new FilterNotificationDialogFragment();
+        final Bundle args = new Bundle();
+        args.putString(ARG_FILTERED_GRP, filteredGrp);
+        args.putStringArrayList(ARG_GRP_LIST,groupNameList);
+        fragment.setArguments(args);
+        return fragment;
     }
 
 
@@ -65,13 +81,12 @@ public class FilterNotificationDialogFragment extends BottomSheetDialogFragment 
             ((BottomSheetBehavior) behavior).setBottomSheetCallback(mBottomSheetBehaviorCallback);
         }
 
-        ArrayList<String> groupNameList = new ArrayList<>();
-        groupNameList.add("None");
-        for(Group group: groupArrayList){
-            groupNameList.add(group.getName());
+        if(getArguments()!= null){
+            groupNameList = getArguments().getStringArrayList(ARG_GRP_LIST);
+            filteredGrp = getArguments().getString(ARG_FILTERED_GRP);
         }
         spinner = contentView.findViewById(R.id.spinner);
-        ArrayAdapter<String> dataAdapter = new ArrayAdapter<>(context, simple_spinner_item, groupNameList);
+        ArrayAdapter<String> dataAdapter = new ArrayAdapter<>(getActivity(), simple_spinner_item, groupNameList);
         dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinner.setAdapter(dataAdapter);
         spinner.setSelection(groupNameList.indexOf(filteredGrp));

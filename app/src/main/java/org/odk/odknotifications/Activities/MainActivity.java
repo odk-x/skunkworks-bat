@@ -89,6 +89,8 @@ import java.util.Map;
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, DatabaseConnectionListener, SortingOptionListener, FilterNotificationListener {
 
+    private static final String SORTED_ORDER = "sorted_order";
+    private static final String FILTERED_GRP = "filtered_grp";
     //private String appName = "org.odk.odknotifications";
     public static String appName = ODKFileUtils.getOdkDefaultAppName();
 
@@ -105,6 +107,7 @@ public class MainActivity extends AppCompatActivity
     private SearchView searchView;
     private NotificationAdapter notificationAdapter;
     private String filteredGrp = "None";
+    private String sortedOrder;
 
     protected static final String[] STORAGE_PERMISSION = new String[] {
             android.Manifest.permission.READ_EXTERNAL_STORAGE
@@ -122,7 +125,7 @@ public class MainActivity extends AppCompatActivity
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         requestStoragePermission();
-
+        sortedOrder = getResources().getString(R.string.date_old_to_new);
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -160,7 +163,7 @@ public class MainActivity extends AppCompatActivity
         findViewById(R.id.sort_button).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                BottomSheetDialogFragment bottomSheetDialogFragment = new SortingOptionListDialogFragment(MainActivity.this);
+                BottomSheetDialogFragment bottomSheetDialogFragment = SortingOptionListDialogFragment.newInstance(sortedOrder);
                 bottomSheetDialogFragment.show(getSupportFragmentManager(), bottomSheetDialogFragment.getTag());
             }
         });
@@ -168,11 +171,34 @@ public class MainActivity extends AppCompatActivity
         findViewById(R.id.filter_button).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                BottomSheetDialogFragment bottomSheetDialogFragment = new FilterNotificationDialogFragment(dbHandler.getGroups(),filteredGrp,MainActivity.this,MainActivity.this);
+                ArrayList<String> groupNameList = new ArrayList<>();
+                groupNameList.add("None");
+                for(Group group: groupArrayList){
+                    groupNameList.add(group.getName());
+                }
+                BottomSheetDialogFragment bottomSheetDialogFragment = FilterNotificationDialogFragment.newInstance(groupNameList,filteredGrp);
                 bottomSheetDialogFragment.show(getSupportFragmentManager(), bottomSheetDialogFragment.getTag());
             }
         });
         addMenuItemInNavMenuDrawer();
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+
+        outState.putString(SORTED_ORDER,sortedOrder);
+        outState.putString(FILTERED_GRP,filteredGrp);
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+
+        filteredGrp = savedInstanceState.getString(FILTERED_GRP);
+        sortedOrder = savedInstanceState.getString(SORTED_ORDER);
+        sort(sortedOrder);
+        filterByGroup(filteredGrp);
     }
 
     public String loadJSONFromAsset() {
@@ -599,6 +625,7 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void sort(String field) {
         notificationAdapter.sort(field);
+        sortedOrder = field;
     }
 }
 
