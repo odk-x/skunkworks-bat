@@ -97,6 +97,7 @@ public class DBHandler extends SQLiteOpenHelper {
         for(Group group: groupArrayList){
             addNewGroup(group);
         }
+        db.close();
     }
 
     public ArrayList<Notification> getNotifications(String groupId) {
