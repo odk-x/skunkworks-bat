@@ -227,7 +227,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void addGroupsFromFirebase() {
-        DatabaseReference mRef  = FirebaseDatabase.getInstance().getReference().child("clients").child(getActiveUser());
+        DatabaseReference mRef  = FirebaseDatabase.getInstance().getReference().child("clients").child(getActiveUser()).child("groups");
 
         mRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
@@ -240,7 +240,6 @@ public class MainActivity extends AppCompatActivity
                     new SubscribeNotificationGroup(MainActivity.this, id, getActiveUser());
                     dbHandler.addNewGroup(grp);
                 }
-                addMenuItemInNavMenuDrawer();
             }
 
             @Override
@@ -364,10 +363,11 @@ public class MainActivity extends AppCompatActivity
                                     public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                                         Group group = new Group((String)dataSnapshot.child("id").getValue(),(String)dataSnapshot.child("name").getValue(),0);
                                         new SubscribeNotificationGroup(MainActivity.this,group.getId(),getActiveUser()).execute();
-                                        DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference().child("clients").child(getActiveUser()).child("groups");
+                                        DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference().child("clients").child(getActiveUser()).child("groups").push();
                                         databaseReference.child("id").setValue(group.getId());
                                         databaseReference.child("name").setValue(group.getName());
                                         dbHandler.addNewGroup(group);
+                                        addMenuItemInNavMenuDrawer();
                                     }
 
                                     @Override
