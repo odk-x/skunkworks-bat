@@ -1,6 +1,6 @@
 package org.odk.odknotifications.DatabaseCommunicator;
 
-import androidx.test.InstrumentationRegistry;
+import androidx.test.platform.app.InstrumentationRegistry;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
@@ -28,7 +28,7 @@ public class DBHandlerTest{
 
     @Before
     public void setUp(){
-        dbHandler = new DBHandler(InstrumentationRegistry.getTargetContext(),null,null,1);
+        dbHandler = new DBHandler(InstrumentationRegistry.getInstrumentation().getTargetContext(),null,null,1);
     }
 
     @After

@@ -4,6 +4,7 @@ import android.app.Activity;
 
 import androidx.test.espresso.intent.rule.IntentsTestRule;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import androidx.test.filters.LargeTest;
 import androidx.test.rule.GrantPermissionRule;
 
 import org.junit.Before;
@@ -25,10 +26,16 @@ import static android.app.Instrumentation.ActivityResult;
 import static org.hamcrest.core.AllOf.allOf;
 
 @RunWith(AndroidJUnit4.class)
+@LargeTest
 public class MainActivityTest {
 
+    private static final String QRCODE_SCAN_ACTION= "com.google.zxing.client.android.SCAN";
+
     @Rule
-    public GrantPermissionRule grantPermissionRule = GrantPermissionRule.grant("android.permission.CAMERA");
+    public GrantPermissionRule grantCameraPermissionRule = GrantPermissionRule.grant("Manifest.permission.CAMERA");
+    @Rule
+    public GrantPermissionRule grantStoragePermissionRule = GrantPermissionRule.grant("Manifest.permission.READ_EXTERNAL_STORAGE");
+
 
     @Rule
     public IntentsTestRule<MainActivity> mainActivityIntentsTestRule = new IntentsTestRule<>(MainActivity.class);
@@ -47,7 +54,7 @@ public class MainActivityTest {
     public void qrCodeIntentTest(){
         onView(withId(R.id.fab)).perform(click());
         intended(allOf(
-                hasAction("com.google.zxing.client.android.SCAN")));
+                hasAction(QRCODE_SCAN_ACTION)));
     }
 
 
