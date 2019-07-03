@@ -1,5 +1,8 @@
 package org.odk.odknotifications.Activities;
 
+import android.app.ProgressDialog;
+import android.app.SearchManager;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -7,8 +10,12 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import androidx.annotation.NonNull;
+
+import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
+
+import androidx.appcompat.widget.SearchView;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.core.view.GravityCompat;
@@ -17,6 +24,8 @@ import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.util.Log;
 import android.view.Menu;
@@ -42,9 +51,15 @@ import com.google.zxing.integration.android.IntentResult;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.odk.odknotifications.Adapters.NotificationAdapter;
 import org.odk.odknotifications.DatabaseCommunicator.DBHandler;
+import org.odk.odknotifications.Fragments.FilterNotificationDialogFragment;
 import org.odk.odknotifications.Fragments.NotificationGroupFragment;
+import org.odk.odknotifications.Fragments.SortingOptionListDialogFragment;
+import org.odk.odknotifications.Listeners.FilterNotificationListener;
+import org.odk.odknotifications.Listeners.SortingOptionListener;
 import org.odk.odknotifications.Model.Group;
+import org.odk.odknotifications.Model.Notification;
 import org.odk.odknotifications.R;
 import org.odk.odknotifications.SubscribeNotificationGroup;
 import org.odk.odknotifications.UnsubscribeNotificationGroups;
@@ -72,8 +87,10 @@ import java.util.Map;
 
 
 public class MainActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener, DatabaseConnectionListener {
+        implements NavigationView.OnNavigationItemSelectedListener, DatabaseConnectionListener, SortingOptionListener, FilterNotificationListener {
 
+    private static final String SORTED_ORDER = "sorted_order";
+    private static final String FILTERED_GRP = "filtered_grp";
     //private String appName = "org.odk.odknotifications";
     public static String appName = ODKFileUtils.getOdkDefaultAppName();
 
@@ -87,6 +104,10 @@ public class MainActivity extends AppCompatActivity
     public static final String ARG_GROUP_ID = "id";
     private final int PERMISSION_REQUEST_READ_EXTERNAL_STORAGE_CODE = 1;
     private boolean hasBeenInitialized = false;
+    private SearchView searchView;
+    private NotificationAdapter notificationAdapter;
+    private String filteredGrp = "None";
+    private String sortedOrder;
 
     protected static final String[] STORAGE_PERMISSION = new String[] {
             android.Manifest.permission.READ_EXTERNAL_STORAGE
@@ -104,7 +125,7 @@ public class MainActivity extends AppCompatActivity
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         requestStoragePermission();
-
+        sortedOrder = getResources().getString(R.string.date_old_to_new);
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -122,6 +143,12 @@ public class MainActivity extends AppCompatActivity
         }
         this.appName = appName;
 
+        ArrayList<Notification> notificationArrayList = dbHandler.getAllNotifications();
+        RecyclerView recyclerView = findViewById(R.id.rv_notifications);
+        notificationAdapter = new NotificationAdapter(notificationArrayList,this);
+        recyclerView.setAdapter(notificationAdapter);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
@@ -133,7 +160,45 @@ public class MainActivity extends AppCompatActivity
         View headerView = navigationView.getHeaderView(0);
         name_tv = (TextView) headerView.findViewById(R.id.name_tv);
 
+        findViewById(R.id.sort_button).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                BottomSheetDialogFragment bottomSheetDialogFragment = SortingOptionListDialogFragment.newInstance(sortedOrder);
+                bottomSheetDialogFragment.show(getSupportFragmentManager(), bottomSheetDialogFragment.getTag());
+            }
+        });
+
+        findViewById(R.id.filter_button).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                ArrayList<String> groupNameList = new ArrayList<>();
+                groupNameList.add("None");
+                for(Group group: groupArrayList){
+                    groupNameList.add(group.getName());
+                }
+                BottomSheetDialogFragment bottomSheetDialogFragment = FilterNotificationDialogFragment.newInstance(groupNameList,filteredGrp);
+                bottomSheetDialogFragment.show(getSupportFragmentManager(), bottomSheetDialogFragment.getTag());
+            }
+        });
         addMenuItemInNavMenuDrawer();
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+
+        outState.putString(SORTED_ORDER,sortedOrder);
+        outState.putString(FILTERED_GRP,filteredGrp);
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+
+        filteredGrp = savedInstanceState.getString(FILTERED_GRP);
+        sortedOrder = savedInstanceState.getString(SORTED_ORDER);
+        sort(sortedOrder);
+        filterByGroup(filteredGrp);
     }
 
     public String loadJSONFromAsset() {
@@ -179,6 +244,10 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onBackPressed() {
+        if (!searchView.isIconified()) {
+            searchView.setIconified(true);
+            return;
+        }
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
@@ -188,7 +257,6 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void addMenuItemInNavMenuDrawer() {
-
         NavigationView navView = (NavigationView) findViewById(R.id.nav_view);
         groupArrayList = dbHandler.getGroups();
         Menu menu = navView.getMenu();
@@ -203,6 +271,30 @@ public class MainActivity extends AppCompatActivity
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.main, menu);
+        // Associate searchable configuration with the SearchView
+        SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
+        searchView = (SearchView) menu.findItem(R.id.action_search)
+                .getActionView();
+        searchView.setSearchableInfo(searchManager
+                .getSearchableInfo(getComponentName()));
+        searchView.setMaxWidth(Integer.MAX_VALUE);
+
+        // listening to search query text change
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                // filter recycler view when query submitted
+                notificationAdapter.getFilter().filter(query);
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String query) {
+                // filter recycler view when text is changed
+                notificationAdapter.getFilter().filter(query);
+                return false;
+            }
+        });
         return super.onCreateOptionsMenu(menu);
     }
 
@@ -227,6 +319,10 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void addGroupsFromFirebase() {
+        final ProgressDialog dialog = new ProgressDialog(this);
+        dialog.setMessage("Please Wait! Loading groups from firebase...");
+        dialog.show();
+        dialog.setCancelable(false);
         DatabaseReference mRef  = FirebaseDatabase.getInstance().getReference().child("clients").child(getActiveUser()).child("groups");
 
         mRef.addListenerForSingleValueEvent(new ValueEventListener() {
@@ -240,6 +336,7 @@ public class MainActivity extends AppCompatActivity
                     new SubscribeNotificationGroup(MainActivity.this, id, getActiveUser());
                     dbHandler.addNewGroup(grp);
                 }
+                dialog.dismiss();
             }
 
             @Override
@@ -520,6 +617,17 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
+    @Override
+    public void filterByGroup(String group) {
+        notificationAdapter.filterByGroup(group);
+        filteredGrp = group;
+    }
+
+    @Override
+    public void sort(String field) {
+        notificationAdapter.sort(field);
+        sortedOrder = field;
+    }
 }
 
 

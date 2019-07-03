@@ -3,10 +3,10 @@ package org.odk.odknotifications.Model;
 import java.text.SimpleDateFormat;
 
 public class Notification {
-    String title;
-    String message;
-    Long date;
-    String group;
+    private String title;
+    private String message;
+    private Long date;
+    private String group;
 
     public Notification(String title, String message, Long date, String group) {
         this.title = title;

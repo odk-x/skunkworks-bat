@@ -18,7 +18,7 @@ import java.util.ArrayList;
 
 public class NotificationGroupFragment extends Fragment {
 
-    public static final String ARG_GROUP_ID = "id";
+    private static final String ARG_GROUP_ID = "id";
     private String groupId;
     private RecyclerView recyclerView;
     ArrayList<Notification> notificationArrayList;

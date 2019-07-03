@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context=".Fragments.SortingOptionListDialogFragment">
+
+    <TextView
+        android:id="@+id/textView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="10dp"
+        android:text="Sort By:"
+        android:textSize="20sp"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <View
+        android:id="@+id/view"
+        android:layout_width="match_parent"
+        android:layout_height="2dp"
+        android:background="@color/light_grey"
+        tools:layout_editor_absoluteX="0dp"
+        tools:layout_editor_absoluteY="55dp"
+        app:layout_constraintTop_toBottomOf="@+id/textView"/>
+
+    <RadioGroup
+        android:id="@+id/radioGroup"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="10dp"
+        android:checkedButton="@id/rb_date_old_to_new"
+        app:layout_constraintTop_toBottomOf="@+id/view">
+
+        <RadioButton
+            android:tag="@string/date_old_to_new"
+            android:id="@+id/rb_date_old_to_new"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="start"
+            android:layoutDirection="rtl"
+            android:text="@string/date_old_to_new"
+            android:textAlignment="textStart" />
+
+        <RadioButton
+            android:tag="@string/date_new_to_old"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="start"
+            android:layoutDirection="rtl"
+            android:text="@string/date_new_to_old"
+            android:textAlignment="textStart" />
+
+        <RadioButton
+            android:tag="@string/title"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="start"
+            android:layoutDirection="rtl"
+            android:text="@string/title"
+            android:textAlignment="textStart" />
+
+        <RadioButton
+            android:tag="@string/message"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="start"
+            android:layoutDirection="rtl"
+            android:text="@string/message"
+            android:textAlignment="textStart" />
+
+    </RadioGroup>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
