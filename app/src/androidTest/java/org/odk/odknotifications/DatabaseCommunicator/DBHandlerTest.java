@@ -29,10 +29,14 @@ public class DBHandlerTest{
     @Before
     public void setUp(){
         dbHandler = new DBHandler(InstrumentationRegistry.getInstrumentation().getTargetContext(),null,null,1);
+        dbHandler.clearTable(DBHandler.TABLE_GROUPS);
+        dbHandler.clearTable(DBHandler.TABLE_NOTIFICATIONS);
     }
 
     @After
     public void finish() {
+        dbHandler.clearTable(DBHandler.TABLE_GROUPS);
+        dbHandler.clearTable(DBHandler.TABLE_NOTIFICATIONS);
         dbHandler.close();
     }
 
@@ -42,11 +46,11 @@ public class DBHandlerTest{
     }
 
     @Test
-    public void addNewGroupTest() throws Exception {
+    public void addNewGroupTest() {
         Group group = new Group("test_group","Test Group",0);
         dbHandler.addNewGroup(group);
         List<Group> groups = dbHandler.getGroups();
-        Assert.assertTrue(EqualsBuilder.reflectionEquals(group,groups.get(groups.size()-1)));
+        Assert.assertTrue(EqualsBuilder.reflectionEquals(group,groups.get(0)));
     }
 
     @Test
@@ -54,17 +58,20 @@ public class DBHandlerTest{
         Notification notification = new Notification("test_notification","This is a test notification", Calendar.getInstance().getTimeInMillis(),"test_group");
         dbHandler.addNotification(notification);
         List<Notification> notifications = dbHandler.getNotifications("test_group");
-        Assert.assertTrue(EqualsBuilder.reflectionEquals(notification,notifications.get(notifications.size()-1)));
+        Assert.assertTrue(EqualsBuilder.reflectionEquals(notification,notifications.get(0)));
     }
 
     @Test
     public void newGroupDatabaseTest(){
         ArrayList<Group> groups = new ArrayList<>();
-        Group group = new Group("test_group","Test Group",0);
-        groups.add(group);
+        Group group1 = new Group("test_group 1","Test Group 1",0);
+        Group group2 = new Group("test_group 2","Test Group 2",0);
+        groups.add(group1);
+        groups.add(group2);
         dbHandler.newGroupDatabase(groups);
-        assertThat(dbHandler.getGroups().size(),is(1));
-        Assert.assertTrue(EqualsBuilder.reflectionEquals(group,groups.get(0)));
+        assertThat(dbHandler.getGroups().size(),is(2));
+        Assert.assertTrue(EqualsBuilder.reflectionEquals(group1,groups.get(0)));
+        Assert.assertTrue(EqualsBuilder.reflectionEquals(group2,groups.get(1)));
     }
 
 

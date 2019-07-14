@@ -1,5 +1,6 @@
 package org.odk.odknotifications.Activities;
 
+import android.Manifest;
 import android.app.Activity;
 
 import androidx.test.espresso.intent.rule.IntentsTestRule;
@@ -32,10 +33,8 @@ public class MainActivityTest {
     private static final String QRCODE_SCAN_ACTION= "com.google.zxing.client.android.SCAN";
 
     @Rule
-    public GrantPermissionRule grantCameraPermissionRule = GrantPermissionRule.grant("Manifest.permission.CAMERA");
-    @Rule
-    public GrantPermissionRule grantStoragePermissionRule = GrantPermissionRule.grant("Manifest.permission.READ_EXTERNAL_STORAGE");
-
+    public GrantPermissionRule grantCameraPermissionRule = GrantPermissionRule.grant(Manifest.permission.CAMERA,
+                                                                Manifest.permission.WRITE_EXTERNAL_STORAGE);
 
     @Rule
     public IntentsTestRule<MainActivity> mainActivityIntentsTestRule = new IntentsTestRule<>(MainActivity.class);
@@ -53,8 +52,7 @@ public class MainActivityTest {
     @Test
     public void qrCodeIntentTest(){
         onView(withId(R.id.fab)).perform(click());
-        intended(allOf(
-                hasAction(QRCODE_SCAN_ACTION)));
+        intended(allOf(hasAction(QRCODE_SCAN_ACTION)));
     }
 
 
