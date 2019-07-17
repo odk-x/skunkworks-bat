@@ -9,6 +9,8 @@ import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Build;
 import androidx.core.app.NotificationCompat;
+import androidx.core.app.RemoteInput;
+
 import android.util.Log;
 
 import com.firebase.jobdispatcher.FirebaseJobDispatcher;
@@ -22,11 +24,13 @@ import org.odk.odknotifications.DatabaseCommunicator.DBHandler;
 import org.odk.odknotifications.Model.Notification;
 import org.odk.odknotifications.R;
 
+import java.util.Map;
 import java.util.Random;
 
 public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
     private static final String TAG = "MyFirebaseMsgService";
+    private static final String KEY_TEXT_REPLY = "key_text_reply";
 
     /**
      * Called when message is received.
@@ -53,9 +57,15 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         // Check if message contains a data payload.
         if (remoteMessage.getData().size() > 0) {
             Log.e(TAG, "Message data payload: " + remoteMessage.getData());
-            // Handle message within 10 seconds
-                handleNow();
-            sendNotification(remoteMessage.getData().get("title"),remoteMessage.getData().get("message"),remoteMessage.getSentTime(), remoteMessage.getData().get("group"));
+            Map<String,String> receivedData = remoteMessage.getData();
+            Notification notification = new Notification(receivedData.get("id"),receivedData.get("title"), receivedData.get("message"), remoteMessage.getSentTime(),receivedData.get("group"), receivedData.get("type"));
+            if(notification.getType().compareTo(Notification.SIMPLE)==0){
+                sendSimpleNotification(notification);
+            }
+            else if(notification.getType().compareTo(Notification.INTERACTIVE)==0){
+                sendInteractiveNotification(notification);
+            }
+
 
         }
         // Check if message contains a notification payload.
@@ -81,22 +91,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         // [END dispatch_job]
     }
 
-    /**
-     * Handle time allotted to BroadcastReceivers.
-     */
-    private void handleNow() {
-        Log.d(TAG, "Short lived task is done.");
-    }
-
-    /**
-     * Create and show a simple notification containing the received FCM message.
-     * @param messageTitle title of message received
-     * @param messageBody FCM message body received.
-     * @param date_time date and time when the message was sent
-     * @param group name of group to which message was sent.
-     */
-
-    private void sendNotification(String messageTitle, String messageBody, Long date_time, String group) {
+    private void sendSimpleNotification(Notification notification) {
         Intent intent = new Intent(this, MainActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0 /* Request code */, intent,
@@ -107,8 +102,8 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         NotificationCompat.Builder notificationBuilder =
                 new NotificationCompat.Builder(this, channelId)
                         .setSmallIcon(R.drawable.ic_notification_icon)
-                        .setContentTitle(messageTitle)
-                        .setContentText(messageBody)
+                        .setContentTitle(notification.getTitle())
+                        .setContentText(notification.getMessage())
                         .setAutoCancel(true)
                         .setSound(defaultSoundUri)
                         .setContentIntent(pendingIntent);
@@ -128,7 +123,59 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         assert notificationManager != null;
         notificationManager.notify(new Random().nextInt() /* ID of notification */, notificationBuilder.build());
         DBHandler dbHandler = new DBHandler(this,null,null,1);
-        dbHandler.addNotification(new Notification(messageTitle,messageBody,date_time,group));
-        System.out.println("Date:"+date_time);
+        dbHandler.addNotification(notification);
+        System.out.println("Date:"+notification.getDate());
+    }
+
+    private void sendInteractiveNotification(Notification notification) {
+        Intent intent = new Intent(this, MainActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0 /* Request code */, intent,
+                PendingIntent.FLAG_UPDATE_CURRENT);
+
+        String replyLabel = "Enter your reply here";
+        //Initialise RemoteInput
+        RemoteInput remoteInput = new RemoteInput.Builder(KEY_TEXT_REPLY)
+                .setLabel(replyLabel)
+                .build();
+
+        NotificationCompat.Action replyAction = new NotificationCompat.Action.Builder(
+                android.R.drawable.sym_action_chat, "REPLY", pendingIntent)
+                .addRemoteInput(remoteInput)
+                .setAllowGeneratedReplies(true)
+                .build();
+
+        String channelId = getString(R.string.default_notification_channel_id);
+        Uri defaultSoundUri= RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+        NotificationCompat.Builder notificationBuilder =
+                new NotificationCompat.Builder(this, channelId)
+                        .setSmallIcon(R.drawable.ic_notification_icon)
+                        .setContentTitle(notification.getTitle())
+                        .setContentText(notification.getMessage())
+                        .setAutoCancel(true)
+                        .addAction(replyAction)
+                        .setSound(defaultSoundUri)
+                        .setContentIntent(pendingIntent);
+
+        PendingIntent dismissIntent = PendingIntent.getActivity(getBaseContext(), 0, intent, PendingIntent.FLAG_CANCEL_CURRENT);
+        notificationBuilder.addAction(android.R.drawable.ic_menu_close_clear_cancel, "DISMISS", dismissIntent);
+
+        NotificationManager notificationManager =
+                (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+
+        // Since android Oreo notification channel is needed.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationChannel channel = new NotificationChannel(channelId,
+                    "Channel human readable title",
+                    NotificationManager.IMPORTANCE_DEFAULT);
+            assert notificationManager != null;
+            notificationManager.createNotificationChannel(channel);
+        }
+
+        assert notificationManager != null;
+        notificationManager.notify(new Random().nextInt() /* ID of notification */, notificationBuilder.build());
+        DBHandler dbHandler = new DBHandler(this,null,null,1);
+        dbHandler.addNotification(notification);
+        System.out.println("Date:"+notification.getDate());
     }
 }

@@ -18,10 +18,12 @@ public class DBHandler extends SQLiteOpenHelper {
    private static final String TABLE_GROUPS = "groups";
    private static final String TABLE_NOTIFICATIONS = "notifications";
    private static final String COLUMN_NAME = "name";
+   private static final String COLUMN_NOTIF_ID = "notif_id";
    private static final String COLUMN_TITLE = "title";
    private static final String COLUMN_MESSAGE = "message";
    private static final String COLUMN_DATE = "date";
    private static final String COLUMN_GRP_ID = "grp_id";
+   private static final String COLUMN_TYPE = "type";
    private static final String COLUMN_ID = "_id";
    private static final String COLUMN_SNOOZE = "snooze";
 
@@ -41,10 +43,12 @@ public class DBHandler extends SQLiteOpenHelper {
 
         String query2 = "CREATE TABLE IF NOT EXISTS " + TABLE_NOTIFICATIONS + "(" +
                 COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                COLUMN_NOTIF_ID + " TEXT, "+
                 COLUMN_TITLE + " TEXT, " +
                 COLUMN_MESSAGE + " TEXT, " +
                 COLUMN_DATE + " TEXT, " +
-                "grp_id TEXT "+
+                COLUMN_GRP_ID+ " TEXT, "+
+                COLUMN_TYPE + " TEXT " +
                 ");";
         db.execSQL(query2);
     }
@@ -110,12 +114,14 @@ public class DBHandler extends SQLiteOpenHelper {
         c.moveToFirst();
 
         while(!c.isAfterLast()){
-            if(c.getString(c.getColumnIndex(COLUMN_TITLE))!=null){
+            if(c.getString(c.getColumnIndex(COLUMN_NOTIF_ID))!=null){
+                String id = c.getString(c.getColumnIndex(COLUMN_NOTIF_ID));
                 String title = c.getString(c.getColumnIndex(COLUMN_TITLE));
                 String message = c.getString(c.getColumnIndex(COLUMN_MESSAGE));
                 Long date = Long.parseLong(c.getString(c.getColumnIndex(COLUMN_DATE)));
                 String group = c.getString(c.getColumnIndex(COLUMN_GRP_ID));
-                notificationArrayList.add(new Notification(title,message,date,group));
+                String type = c.getString(c.getColumnIndex(COLUMN_TYPE));
+                notificationArrayList.add(new Notification(id,title,message,date,group,type));
             }
             c.moveToNext();
         }
@@ -135,12 +141,14 @@ public class DBHandler extends SQLiteOpenHelper {
         c.moveToFirst();
 
         while(!c.isAfterLast()){
-            if(c.getString(c.getColumnIndex(COLUMN_TITLE))!=null){
+            if(c.getString(c.getColumnIndex(COLUMN_NOTIF_ID))!=null){
+                String id = c.getString(c.getColumnIndex(COLUMN_NOTIF_ID));
                 String title = c.getString(c.getColumnIndex(COLUMN_TITLE));
                 String message = c.getString(c.getColumnIndex(COLUMN_MESSAGE));
                 Long date = Long.parseLong(c.getString(c.getColumnIndex(COLUMN_DATE)));
                 String group = c.getString(c.getColumnIndex(COLUMN_GRP_ID));
-                notificationArrayList.add(new Notification(title,message,date,group));
+                String type = c.getString(c.getColumnIndex(COLUMN_TYPE));
+                notificationArrayList.add(new Notification(id,title,message,date,group,type));
             }
             c.moveToNext();
         }
@@ -152,10 +160,12 @@ public class DBHandler extends SQLiteOpenHelper {
 
     public void addNotification(Notification notification){
         ContentValues values = new ContentValues();
+        values.put(COLUMN_NOTIF_ID, notification.getId());
         values.put(COLUMN_TITLE, notification.getTitle());
         values.put(COLUMN_MESSAGE, (notification.getMessage()));
         values.put(COLUMN_DATE, (String.valueOf(notification.getDate())));
         values.put(COLUMN_GRP_ID,notification.getGroup());
+        values.put(COLUMN_TYPE,notification.getType());
         SQLiteDatabase db = getWritableDatabase();
         db.insert(TABLE_NOTIFICATIONS,null ,values);
         db.close();
