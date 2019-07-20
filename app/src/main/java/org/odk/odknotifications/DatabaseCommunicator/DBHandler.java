@@ -15,8 +15,8 @@ public class DBHandler extends SQLiteOpenHelper {
 
    private static final int DATABASE_VERSION = 13;
    private static final String DATABASE_NAME = "odknotifications.db";
-   private static final String TABLE_GROUPS = "groups";
-   private static final String TABLE_NOTIFICATIONS = "notifications";
+   static final String TABLE_GROUPS = "groups";
+   static final String TABLE_NOTIFICATIONS = "notifications";
    private static final String COLUMN_NAME = "name";
    private static final String COLUMN_TITLE = "title";
    private static final String COLUMN_MESSAGE = "message";
@@ -77,7 +77,7 @@ public class DBHandler extends SQLiteOpenHelper {
         while(!c.isAfterLast()){
             if(c.getString(c.getColumnIndex(COLUMN_GRP_ID))!=null){
                 String name = c.getString(c.getColumnIndex(COLUMN_NAME));
-                Integer snoozeNotifications = c.getInt(c.getColumnIndex(COLUMN_SNOOZE));
+                int snoozeNotifications = c.getInt(c.getColumnIndex(COLUMN_SNOOZE));
                 String id = c.getString(c.getColumnIndex(COLUMN_GRP_ID));
                 groupArrayList.add(new Group(id,name, snoozeNotifications));
             }else{
@@ -97,6 +97,7 @@ public class DBHandler extends SQLiteOpenHelper {
         for(Group group: groupArrayList){
             addNewGroup(group);
         }
+        db.close();
     }
 
     public ArrayList<Notification> getNotifications(String groupId) {
@@ -158,6 +159,12 @@ public class DBHandler extends SQLiteOpenHelper {
         values.put(COLUMN_GRP_ID,notification.getGroup());
         SQLiteDatabase db = getWritableDatabase();
         db.insert(TABLE_NOTIFICATIONS,null ,values);
+        db.close();
+    }
+
+    void clearTable(String tableName){
+        SQLiteDatabase db = getWritableDatabase();
+        db.delete(tableName,null,null);
         db.close();
     }
 }
