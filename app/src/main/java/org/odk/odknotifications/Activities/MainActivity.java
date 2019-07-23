@@ -1,5 +1,6 @@
 package org.odk.odknotifications.Activities;
 
+import android.app.NotificationManager;
 import android.app.ProgressDialog;
 import android.app.SearchManager;
 import android.content.Context;
@@ -16,6 +17,8 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
 
 import androidx.appcompat.widget.SearchView;
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.RemoteInput;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.core.view.GravityCompat;
@@ -61,6 +64,7 @@ import org.odk.odknotifications.Listeners.SortingOptionListener;
 import org.odk.odknotifications.Model.Group;
 import org.odk.odknotifications.Model.Notification;
 import org.odk.odknotifications.R;
+import org.odk.odknotifications.Services.MyFirebaseMessagingService;
 import org.odk.odknotifications.SubscribeNotificationGroup;
 import org.odk.odknotifications.UnsubscribeNotificationGroups;
 import org.opendatakit.application.CommonApplication;
@@ -84,6 +88,8 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+
+import static org.odk.odknotifications.Services.MyFirebaseMessagingService.NOTIFICATION_ID;
 
 
 public class MainActivity extends AppCompatActivity

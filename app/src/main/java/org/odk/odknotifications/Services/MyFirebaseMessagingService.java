@@ -30,7 +30,9 @@ import java.util.Random;
 public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
     private static final String TAG = "MyFirebaseMsgService";
-    private static final String KEY_TEXT_REPLY = "key_text_reply";
+    public static final String KEY_TEXT_REPLY = "key_text_reply";
+    public static final int NOTIFICATION_ID = 1;
+    public static final String CHANNEL_ID = "notification_channel_1";
 
     /**
      * Called when message is received.
@@ -97,10 +99,9 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0 /* Request code */, intent,
                 PendingIntent.FLAG_ONE_SHOT);
 
-        String channelId = getString(R.string.default_notification_channel_id);
         Uri defaultSoundUri= RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
         NotificationCompat.Builder notificationBuilder =
-                new NotificationCompat.Builder(this, channelId)
+                new NotificationCompat.Builder(this, CHANNEL_ID)
                         .setSmallIcon(R.drawable.ic_notification_icon)
                         .setContentTitle(notification.getTitle())
                         .setContentText(notification.getMessage())
@@ -113,7 +114,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
         // Since android Oreo notification channel is needed.
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            NotificationChannel channel = new NotificationChannel(channelId,
+            NotificationChannel channel = new NotificationChannel(CHANNEL_ID,
                     "Channel human readable title",
                     NotificationManager.IMPORTANCE_DEFAULT);
             assert notificationManager != null;
@@ -121,7 +122,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         }
 
         assert notificationManager != null;
-        notificationManager.notify(new Random().nextInt() /* ID of notification */, notificationBuilder.build());
+        notificationManager.notify(NOTIFICATION_ID, notificationBuilder.build());
         DBHandler dbHandler = new DBHandler(this,null,null,1);
         dbHandler.addNotification(notification);
         System.out.println("Date:"+notification.getDate());
@@ -139,8 +140,19 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                 .setLabel(replyLabel)
                 .build();
 
+        PendingIntent replyActionPendingIntent;
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            Intent replyIntent = new Intent(this, NotificationReplyReceiver.class);
+            replyIntent.setAction(NotificationReplyReceiver.ACTION_REPLY);
+            replyActionPendingIntent = PendingIntent.getBroadcast(this, 878, replyIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        } else {
+            replyActionPendingIntent = pendingIntent;
+        }
+
         NotificationCompat.Action replyAction = new NotificationCompat.Action.Builder(
-                android.R.drawable.sym_action_chat, "REPLY", pendingIntent)
+                android.R.drawable.sym_action_chat, "REPLY", replyActionPendingIntent)
                 .addRemoteInput(remoteInput)
                 .setAllowGeneratedReplies(true)
                 .build();
