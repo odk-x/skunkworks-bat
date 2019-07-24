@@ -9,7 +9,10 @@ import android.os.Bundle;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.RemoteInput;
 
+import org.odk.odknotifications.utils.ResponseHandler;
+
 import static org.odk.odknotifications.Services.MyFirebaseMessagingService.CHANNEL_ID;
+import static org.odk.odknotifications.Services.MyFirebaseMessagingService.KEY_NOTIFICATION_ID;
 import static org.odk.odknotifications.Services.MyFirebaseMessagingService.KEY_TEXT_REPLY;
 import static org.odk.odknotifications.Services.MyFirebaseMessagingService.NOTIFICATION_ID;
 
@@ -22,21 +25,28 @@ public class NotificationReplyReceiver extends BroadcastReceiver {
         if (intent != null) {
             final String action = intent.getAction();
             if (ACTION_REPLY.equals(action)) {
-                processInlineReply(context, getMessage(intent));
+                String notificationID = intent.getStringExtra(KEY_NOTIFICATION_ID);
+                String message = String.valueOf(getMessage(intent));
+                ResponseHandler responseHandler = new ResponseHandler(context);
+                boolean isDone = responseHandler.saveResponse(notificationID, message);
+                if(isDone){
+                    processInlineReply(context, message);
+                }
+
             }
         }
     }
 
-    private void processInlineReply(Context context, CharSequence message) {
+    private void processInlineReply(Context context, String message) {
 
         if (message != null) {
 
-            System.out.println("Works fine + "+message);
             //Update the notification to show that the reply was received.
             NotificationCompat.Builder repliedNotification =
                     new NotificationCompat.Builder(context,CHANNEL_ID)
                             .setSmallIcon(android.R.drawable.stat_notify_chat)
-                            .setContentText(message);
+                            .setContentTitle("Response recorded successfully")
+                            .setContentText("Response: "+message);
 
             NotificationManager notificationManager =
                     (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);

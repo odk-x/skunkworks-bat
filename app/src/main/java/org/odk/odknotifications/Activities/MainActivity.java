@@ -6,6 +6,7 @@ import android.app.SearchManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
@@ -329,7 +330,7 @@ public class MainActivity extends AppCompatActivity
         dialog.setMessage("Please Wait! Loading groups from firebase...");
         dialog.show();
         dialog.setCancelable(false);
-        DatabaseReference mRef  = FirebaseDatabase.getInstance().getReference().child("clients").child(getActiveUser()).child("groups");
+        DatabaseReference mRef  = FirebaseDatabase.getInstance().getReference().child("clients").child(loggedInUsername).child("groups");
 
         mRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
@@ -339,7 +340,7 @@ public class MainActivity extends AppCompatActivity
                     String id = (String) group.child("id").getValue();
                     Group grp = new  Group(id,name,0);
                     groupArrayList.add(grp);
-                    new SubscribeNotificationGroup(MainActivity.this, id, getActiveUser());
+                    new SubscribeNotificationGroup(MainActivity.this, id, loggedInUsername);
                     dbHandler.addNewGroup(grp);
                 }
                 dialog.dismiss();
@@ -397,11 +398,18 @@ public class MainActivity extends AppCompatActivity
             mIOdkDataDatabaseListener.databaseAvailable();
         }
         loggedInUsername = getActiveUser();
+        Log.e("Success", "Database available " + loggedInUsername);
+        if(loggedInUsername!=null){
+            if(!(loggedInUsername.compareTo("anonymous")==0)&& loggedInUsername.length()>8 && loggedInUsername.substring(0,9).compareTo("username:")==0){
+                loggedInUsername = loggedInUsername.substring(9);
+            }
+            name_tv.setText(loggedInUsername);
+            SharedPreferences preferences = getSharedPreferences(getPackageName(),MODE_PRIVATE);
+            preferences.edit().putString("username",loggedInUsername).apply();
+        }
         if(hasBeenInitialized){
             getDeepLink();
         }
-        Log.e("Success", "Database available" + loggedInUsername);
-        if(loggedInUsername!=null)name_tv.setText(loggedInUsername);
     }
 
     @Override
@@ -465,8 +473,8 @@ public class MainActivity extends AppCompatActivity
                                     @Override
                                     public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                                         Group group = new Group((String)dataSnapshot.child("id").getValue(),(String)dataSnapshot.child("name").getValue(),0);
-                                        new SubscribeNotificationGroup(MainActivity.this,group.getId(),getActiveUser()).execute();
-                                        DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference().child("clients").child(getActiveUser()).child("groups").push();
+                                        new SubscribeNotificationGroup(MainActivity.this,group.getId(),loggedInUsername).execute();
+                                        DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference().child("clients").child(loggedInUsername).child("groups").push();
                                         databaseReference.child("id").setValue(group.getId());
                                         databaseReference.child("name").setValue(group.getName());
                                         dbHandler.addNewGroup(group);
@@ -533,7 +541,7 @@ public class MainActivity extends AppCompatActivity
     public void joinODKGroups(ArrayList<Group> groupArrayList){
         new UnsubscribeNotificationGroups(this).execute();
         for(Group group: groupArrayList) {
-            new SubscribeNotificationGroup(this, group.getId(), getActiveUser()).execute();
+            new SubscribeNotificationGroup(this, group.getId(), loggedInUsername).execute();
         }
         dbHandler.newGroupDatabase(groupArrayList);
     }

@@ -33,6 +33,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
     public static final String KEY_TEXT_REPLY = "key_text_reply";
     public static final int NOTIFICATION_ID = 1;
     public static final String CHANNEL_ID = "notification_channel_1";
+    public static final String KEY_NOTIFICATION_ID = "notificationID";
 
     /**
      * Called when message is received.
@@ -130,7 +131,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
     private void sendInteractiveNotification(Notification notification) {
         Intent intent = new Intent(this, MainActivity.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_CLEAR_TOP);
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0 /* Request code */, intent,
                 PendingIntent.FLAG_UPDATE_CURRENT);
 
@@ -145,6 +146,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             Intent replyIntent = new Intent(this, NotificationReplyReceiver.class);
             replyIntent.setAction(NotificationReplyReceiver.ACTION_REPLY);
+            replyIntent.putExtra(KEY_NOTIFICATION_ID,notification.getId());
             replyActionPendingIntent = PendingIntent.getBroadcast(this, 878, replyIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
         } else {
@@ -169,7 +171,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                         .setSound(defaultSoundUri)
                         .setContentIntent(pendingIntent);
 
-        PendingIntent dismissIntent = PendingIntent.getActivity(getBaseContext(), 0, intent, PendingIntent.FLAG_CANCEL_CURRENT);
+        PendingIntent dismissIntent = PendingIntent.getActivity(getBaseContext(), 76, intent, PendingIntent.FLAG_CANCEL_CURRENT);
         notificationBuilder.addAction(android.R.drawable.ic_menu_close_clear_cancel, "DISMISS", dismissIntent);
 
         NotificationManager notificationManager =
@@ -185,7 +187,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         }
 
         assert notificationManager != null;
-        notificationManager.notify(new Random().nextInt() /* ID of notification */, notificationBuilder.build());
+        notificationManager.notify(NOTIFICATION_ID, notificationBuilder.build());
         DBHandler dbHandler = new DBHandler(this,null,null,1);
         dbHandler.addNotification(notification);
         System.out.println("Date:"+notification.getDate());

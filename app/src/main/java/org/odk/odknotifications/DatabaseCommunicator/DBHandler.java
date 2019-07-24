@@ -8,6 +8,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 import org.odk.odknotifications.Model.Group;
 import org.odk.odknotifications.Model.Notification;
+import org.odk.odknotifications.Model.Response;
 
 import java.util.ArrayList;
 
@@ -17,6 +18,7 @@ public class DBHandler extends SQLiteOpenHelper {
    private static final String DATABASE_NAME = "odknotifications.db";
    private static final String TABLE_GROUPS = "groups";
    private static final String TABLE_NOTIFICATIONS = "notifications";
+   private static final String TABLE_RESPONSES = "responses";
    private static final String COLUMN_NAME = "name";
    private static final String COLUMN_NOTIF_ID = "notif_id";
    private static final String COLUMN_TITLE = "title";
@@ -26,6 +28,8 @@ public class DBHandler extends SQLiteOpenHelper {
    private static final String COLUMN_TYPE = "type";
    private static final String COLUMN_ID = "_id";
    private static final String COLUMN_SNOOZE = "snooze";
+   private static final String COLUMN_RESPONSE_ID = "response_id";
+   private static final String COLUMN_SENDER_ID = "sender_id";
 
 
     public DBHandler(Context context, String name, SQLiteDatabase.CursorFactory factory, int version) {
@@ -51,12 +55,20 @@ public class DBHandler extends SQLiteOpenHelper {
                 COLUMN_TYPE + " TEXT " +
                 ");";
         db.execSQL(query2);
+        String query3 = "CREATE TABLE IF NOT EXISTS " + TABLE_RESPONSES + "(" +
+                COLUMN_RESPONSE_ID + " TEXT PRIMARY KEY, " +
+                COLUMN_NOTIF_ID + " TEXT, "+
+                COLUMN_MESSAGE + " TEXT, "+
+                COLUMN_SENDER_ID + " TEXT "+
+                ");";
+        db.execSQL(query3);
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_GROUPS);
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_NOTIFICATIONS);
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_RESPONSES);
         onCreate(db);
     }
 
@@ -168,6 +180,17 @@ public class DBHandler extends SQLiteOpenHelper {
         values.put(COLUMN_TYPE,notification.getType());
         SQLiteDatabase db = getWritableDatabase();
         db.insert(TABLE_NOTIFICATIONS,null ,values);
+        db.close();
+    }
+
+    public void addResponse(Response response){
+        ContentValues values = new ContentValues();
+        values.put(COLUMN_RESPONSE_ID,response.getResponseID());
+        values.put(COLUMN_NOTIF_ID,response.getNotificationID());
+        values.put(COLUMN_MESSAGE,response.getMessage());
+        values.put(COLUMN_SENDER_ID,response.getSenderID());
+        SQLiteDatabase db = getWritableDatabase();
+        db.insert(TABLE_RESPONSES,null,values);
         db.close();
     }
 }
