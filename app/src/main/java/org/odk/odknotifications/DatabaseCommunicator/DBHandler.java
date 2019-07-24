@@ -93,7 +93,7 @@ public class DBHandler extends SQLiteOpenHelper {
         while(!c.isAfterLast()){
             if(c.getString(c.getColumnIndex(COLUMN_GRP_ID))!=null){
                 String name = c.getString(c.getColumnIndex(COLUMN_NAME));
-                Integer snoozeNotifications = c.getInt(c.getColumnIndex(COLUMN_SNOOZE));
+                int snoozeNotifications = c.getInt(c.getColumnIndex(COLUMN_SNOOZE));
                 String id = c.getString(c.getColumnIndex(COLUMN_GRP_ID));
                 groupArrayList.add(new Group(id,name, snoozeNotifications));
             }else{
@@ -113,6 +113,7 @@ public class DBHandler extends SQLiteOpenHelper {
         for(Group group: groupArrayList){
             addNewGroup(group);
         }
+        db.close();
     }
 
     public ArrayList<Notification> getNotifications(String groupId) {
@@ -182,7 +183,6 @@ public class DBHandler extends SQLiteOpenHelper {
         db.insert(TABLE_NOTIFICATIONS,null ,values);
         db.close();
     }
-
     public void addResponse(Response response){
         ContentValues values = new ContentValues();
         values.put(COLUMN_RESPONSE_ID,response.getResponseID());
@@ -193,4 +193,8 @@ public class DBHandler extends SQLiteOpenHelper {
         db.insert(TABLE_RESPONSES,null,values);
         db.close();
     }
-}
+   void clearTable(String tableName){
+        SQLiteDatabase db = getWritableDatabase();
+        db.delete(tableName,null,null);
+        db.close();
+    }
