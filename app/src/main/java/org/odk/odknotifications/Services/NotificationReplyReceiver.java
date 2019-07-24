@@ -11,6 +11,8 @@ import androidx.core.app.RemoteInput;
 
 import org.odk.odknotifications.utils.ResponseHandler;
 
+import java.util.Date;
+
 import static org.odk.odknotifications.Services.MyFirebaseMessagingService.CHANNEL_ID;
 import static org.odk.odknotifications.Services.MyFirebaseMessagingService.KEY_NOTIFICATION_ID;
 import static org.odk.odknotifications.Services.MyFirebaseMessagingService.KEY_TEXT_REPLY;
@@ -28,7 +30,7 @@ public class NotificationReplyReceiver extends BroadcastReceiver {
                 String notificationID = intent.getStringExtra(KEY_NOTIFICATION_ID);
                 String message = String.valueOf(getMessage(intent));
                 ResponseHandler responseHandler = new ResponseHandler(context);
-                boolean isDone = responseHandler.saveResponse(notificationID, message);
+                boolean isDone = responseHandler.saveResponse(notificationID, message,new Date().getTime());
                 if(isDone){
                     processInlineReply(context, message);
                 }

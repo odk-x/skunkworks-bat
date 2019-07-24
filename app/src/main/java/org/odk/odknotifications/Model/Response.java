@@ -5,11 +5,13 @@ public class Response {
     private String notificationID;
     private String message;
     private String senderID;
+    private long time;
 
-    public Response(String notificationID, String message, String senderID) {
+    public Response(String notificationID, String message, String senderID, long time) {
         this.notificationID = notificationID;
         this.message = message;
         this.senderID = senderID;
+        this.time = time;
     }
 
     public String getSenderID() {
@@ -42,5 +44,13 @@ public class Response {
 
     public void setResponseID(String responseID) {
         this.responseID = responseID;
+    }
+
+    public long getTime() {
+        return time;
+    }
+
+    public void setTime(long time) {
+        this.time = time;
     }
 }

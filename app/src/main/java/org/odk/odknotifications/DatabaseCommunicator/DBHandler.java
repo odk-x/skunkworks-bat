@@ -59,7 +59,8 @@ public class DBHandler extends SQLiteOpenHelper {
                 COLUMN_RESPONSE_ID + " TEXT PRIMARY KEY, " +
                 COLUMN_NOTIF_ID + " TEXT, "+
                 COLUMN_MESSAGE + " TEXT, "+
-                COLUMN_SENDER_ID + " TEXT "+
+                COLUMN_SENDER_ID + " TEXT, "+
+                COLUMN_DATE + " TEXT " +
                 ");";
         db.execSQL(query3);
     }
@@ -189,6 +190,7 @@ public class DBHandler extends SQLiteOpenHelper {
         values.put(COLUMN_NOTIF_ID,response.getNotificationID());
         values.put(COLUMN_MESSAGE,response.getMessage());
         values.put(COLUMN_SENDER_ID,response.getSenderID());
+        values.put(COLUMN_DATE,response.getTime());
         SQLiteDatabase db = getWritableDatabase();
         db.insert(TABLE_RESPONSES,null,values);
         db.close();

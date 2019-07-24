@@ -19,11 +19,11 @@ public class ResponseHandler {
         preferences = context.getSharedPreferences(context.getPackageName(),Context.MODE_PRIVATE);
         dbHandler = new DBHandler(context,null,null,1);
     }
-    public boolean saveResponse(String notificationID,String message){
+    public boolean saveResponse(String notificationID,String message,long time){
         boolean result = false;
         try{
             String username = preferences.getString("username","anonymous");
-            Response response = new Response(notificationID,message,username);
+            Response response = new Response(notificationID,message,username,time);
             DatabaseReference responesRef = FirebaseDatabase.getInstance().getReference("/respones").push();
             String responseID = responesRef.getKey();
             responesRef.setValue(response);
