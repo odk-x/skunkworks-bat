@@ -150,7 +150,7 @@ public class MainActivity extends AppCompatActivity
         }
         this.appName = appName;
 
-        ArrayList<Notification> notificationArrayList = dbHandler.getAllNotifications();
+        ArrayList<Notification> notificationArrayList = dbHandler.getAllNotificationsWithResponses();
         RecyclerView recyclerView = findViewById(R.id.rv_notifications);
         notificationAdapter = new NotificationAdapter(notificationArrayList,this);
         recyclerView.setAdapter(notificationAdapter);
@@ -320,6 +320,7 @@ public class MainActivity extends AppCompatActivity
 
     private void syncCloudDatabase() {
         groupArrayList = getGroups();
+        new UnsubscribeNotificationGroups(this).execute();
         addGroupsFromFirebase();
         joinODKGroups(groupArrayList);
         addMenuItemInNavMenuDrawer();
@@ -340,7 +341,7 @@ public class MainActivity extends AppCompatActivity
                     String id = (String) group.child("id").getValue();
                     Group grp = new  Group(id,name,0);
                     groupArrayList.add(grp);
-                    new SubscribeNotificationGroup(MainActivity.this, id, loggedInUsername);
+                    new SubscribeNotificationGroup(MainActivity.this, id, loggedInUsername).execute();
                     dbHandler.addNewGroup(grp);
                 }
                 dialog.dismiss();
@@ -539,7 +540,6 @@ public class MainActivity extends AppCompatActivity
    }
 
     public void joinODKGroups(ArrayList<Group> groupArrayList){
-        new UnsubscribeNotificationGroups(this).execute();
         for(Group group: groupArrayList) {
             new SubscribeNotificationGroup(this, group.getId(), loggedInUsername).execute();
         }

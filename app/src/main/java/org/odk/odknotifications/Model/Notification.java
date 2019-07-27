@@ -12,6 +12,7 @@ public class Notification {
     private Long date;
     private String group;
     private String type;
+    private String response;
 
     public Notification(String id, String title, String message, Long date, String group, String type) {
         this.id = id;
@@ -72,5 +73,13 @@ public class Notification {
 
     public void setId(String id) {
         this.id = id;
+    }
+
+    public String getResponse() {
+        return response;
+    }
+
+    public void setResponse(String response) {
+        this.response = response;
     }
 }

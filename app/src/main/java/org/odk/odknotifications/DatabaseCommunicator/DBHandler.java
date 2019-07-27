@@ -30,6 +30,8 @@ public class DBHandler extends SQLiteOpenHelper {
    private static final String COLUMN_SNOOZE = "snooze";
    private static final String COLUMN_RESPONSE_ID = "response_id";
    private static final String COLUMN_SENDER_ID = "sender_id";
+   private static final String COLUMN_RESPONSE = "response";
+    private static final String COLUMN_RESPONSE_DATE = "response_date";
 
 
     public DBHandler(Context context, String name, SQLiteDatabase.CursorFactory factory, int version) {
@@ -58,9 +60,9 @@ public class DBHandler extends SQLiteOpenHelper {
         String query3 = "CREATE TABLE IF NOT EXISTS " + TABLE_RESPONSES + "(" +
                 COLUMN_RESPONSE_ID + " TEXT PRIMARY KEY, " +
                 COLUMN_NOTIF_ID + " TEXT, "+
-                COLUMN_MESSAGE + " TEXT, "+
+                COLUMN_RESPONSE + " TEXT, "+
                 COLUMN_SENDER_ID + " TEXT, "+
-                COLUMN_DATE + " TEXT " +
+                COLUMN_RESPONSE_DATE + " TEXT " +
                 ");";
         db.execSQL(query3);
     }
@@ -144,10 +146,10 @@ public class DBHandler extends SQLiteOpenHelper {
         return  notificationArrayList;
     }
 
-    public ArrayList<Notification> getAllNotifications() {
+    public ArrayList<Notification> getAllNotificationsWithResponses() {
         ArrayList<Notification> notificationArrayList = new ArrayList<>();
         SQLiteDatabase db = getWritableDatabase();
-        String query = "SELECT * FROM "+ TABLE_NOTIFICATIONS + ";";
+        String query = "SELECT * FROM "+ TABLE_NOTIFICATIONS + " LEFT JOIN "+TABLE_RESPONSES+" USING("+COLUMN_NOTIF_ID+")"+";";
         System.out.println(query);
 
         Cursor c = db.rawQuery(query,null);
@@ -161,7 +163,11 @@ public class DBHandler extends SQLiteOpenHelper {
                 Long date = Long.parseLong(c.getString(c.getColumnIndex(COLUMN_DATE)));
                 String group = c.getString(c.getColumnIndex(COLUMN_GRP_ID));
                 String type = c.getString(c.getColumnIndex(COLUMN_TYPE));
-                notificationArrayList.add(new Notification(id,title,message,date,group,type));
+                String response = c.getString(c.getColumnIndex(COLUMN_RESPONSE));
+                Notification notification = new Notification(id,title,message,date,group,type);
+                notification.setResponse(response);
+                notificationArrayList.add(notification);
+
             }
             c.moveToNext();
         }
@@ -188,9 +194,9 @@ public class DBHandler extends SQLiteOpenHelper {
         ContentValues values = new ContentValues();
         values.put(COLUMN_RESPONSE_ID,response.getResponseID());
         values.put(COLUMN_NOTIF_ID,response.getNotificationID());
-        values.put(COLUMN_MESSAGE,response.getMessage());
+        values.put(COLUMN_RESPONSE,response.getMessage());
         values.put(COLUMN_SENDER_ID,response.getSenderID());
-        values.put(COLUMN_DATE,response.getTime());
+        values.put(COLUMN_RESPONSE_DATE,response.getTime());
         SQLiteDatabase db = getWritableDatabase();
         db.insert(TABLE_RESPONSES,null,values);
         db.close();
