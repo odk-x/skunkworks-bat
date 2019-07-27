@@ -14,23 +14,23 @@ import java.util.ArrayList;
 
 public class DBHandler extends SQLiteOpenHelper {
 
-   private static final int DATABASE_VERSION = 13;
-   private static final String DATABASE_NAME = "odknotifications.db";
-   private static final String TABLE_GROUPS = "groups";
-   private static final String TABLE_NOTIFICATIONS = "notifications";
-   private static final String TABLE_RESPONSES = "responses";
-   private static final String COLUMN_NAME = "name";
-   private static final String COLUMN_NOTIF_ID = "notif_id";
-   private static final String COLUMN_TITLE = "title";
-   private static final String COLUMN_MESSAGE = "message";
-   private static final String COLUMN_DATE = "date";
-   private static final String COLUMN_GRP_ID = "grp_id";
-   private static final String COLUMN_TYPE = "type";
-   private static final String COLUMN_ID = "_id";
-   private static final String COLUMN_SNOOZE = "snooze";
-   private static final String COLUMN_RESPONSE_ID = "response_id";
-   private static final String COLUMN_SENDER_ID = "sender_id";
-   private static final String COLUMN_RESPONSE = "response";
+    private static final int DATABASE_VERSION = 13;
+    private static final String DATABASE_NAME = "odknotifications.db";
+    public static final String TABLE_GROUPS = "groups";
+    public static final String TABLE_NOTIFICATIONS = "notifications";
+    public static final String TABLE_RESPONSES = "responses";
+    private static final String COLUMN_NAME = "name";
+    private static final String COLUMN_NOTIF_ID = "notif_id";
+    private static final String COLUMN_TITLE = "title";
+    private static final String COLUMN_MESSAGE = "message";
+    private static final String COLUMN_DATE = "date";
+    private static final String COLUMN_GRP_ID = "grp_id";
+    private static final String COLUMN_TYPE = "type";
+    private static final String COLUMN_ID = "_id";
+    private static final String COLUMN_SNOOZE = "snooze";
+    private static final String COLUMN_RESPONSE_ID = "response_id";
+    private static final String COLUMN_SENDER_ID = "sender_id";
+    private static final String COLUMN_RESPONSE = "response";
     private static final String COLUMN_RESPONSE_DATE = "response_date";
 
 
@@ -76,30 +76,30 @@ public class DBHandler extends SQLiteOpenHelper {
     }
 
     //Add new group to the database.
-    public void addNewGroup(Group group){
+    public void addNewGroup(Group group) {
         ContentValues values = new ContentValues();
         values.put(COLUMN_NAME, group.getName());
         values.put(COLUMN_SNOOZE, (group.getSnoozeNotifications()));
         values.put(COLUMN_GRP_ID, group.getId());
         SQLiteDatabase db = getWritableDatabase();
-        db.insert(TABLE_GROUPS,null ,values);
+        db.insert(TABLE_GROUPS, null, values);
         db.close();
     }
 
-    public ArrayList<Group> getGroups(){
+    public ArrayList<Group> getGroups() {
         ArrayList<Group> groupArrayList = new ArrayList<>();
         SQLiteDatabase db = getWritableDatabase();
-        String query = "SELECT * FROM "+ TABLE_GROUPS +" ;";
-        Cursor c = db.rawQuery(query,null);
+        String query = "SELECT * FROM " + TABLE_GROUPS + " ;";
+        Cursor c = db.rawQuery(query, null);
         c.moveToFirst();
 
-        while(!c.isAfterLast()){
-            if(c.getString(c.getColumnIndex(COLUMN_GRP_ID))!=null){
+        while (!c.isAfterLast()) {
+            if (c.getString(c.getColumnIndex(COLUMN_GRP_ID)) != null) {
                 String name = c.getString(c.getColumnIndex(COLUMN_NAME));
                 int snoozeNotifications = c.getInt(c.getColumnIndex(COLUMN_SNOOZE));
                 String id = c.getString(c.getColumnIndex(COLUMN_GRP_ID));
-                groupArrayList.add(new Group(id,name, snoozeNotifications));
-            }else{
+                groupArrayList.add(new Group(id, name, snoozeNotifications));
+            } else {
                 System.out.println("ID is Null");
             }
             c.moveToNext();
@@ -109,11 +109,11 @@ public class DBHandler extends SQLiteOpenHelper {
         return groupArrayList;
     }
 
-    public void newGroupDatabase(ArrayList<Group> groupArrayList){
+    public void newGroupDatabase(ArrayList<Group> groupArrayList) {
         SQLiteDatabase db = getWritableDatabase();
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_GROUPS);
         onCreate(db);
-        for(Group group: groupArrayList){
+        for (Group group : groupArrayList) {
             addNewGroup(group);
         }
         db.close();
@@ -123,41 +123,41 @@ public class DBHandler extends SQLiteOpenHelper {
         ArrayList<Notification> notificationArrayList = new ArrayList<>();
         SQLiteDatabase db = getWritableDatabase();
         System.out.println(groupId);
-        String query = "SELECT * FROM "+ TABLE_NOTIFICATIONS + " WHERE "+COLUMN_GRP_ID+" = '"+groupId+"' ;";
+        String query = "SELECT * FROM " + TABLE_NOTIFICATIONS + " WHERE " + COLUMN_GRP_ID + " = '" + groupId + "' ;";
         System.out.println(query);
 
-        Cursor c = db.rawQuery(query,null);
+        Cursor c = db.rawQuery(query, null);
         c.moveToFirst();
 
-        while(!c.isAfterLast()){
-            if(c.getString(c.getColumnIndex(COLUMN_NOTIF_ID))!=null){
+        while (!c.isAfterLast()) {
+            if (c.getString(c.getColumnIndex(COLUMN_NOTIF_ID)) != null) {
                 String id = c.getString(c.getColumnIndex(COLUMN_NOTIF_ID));
                 String title = c.getString(c.getColumnIndex(COLUMN_TITLE));
                 String message = c.getString(c.getColumnIndex(COLUMN_MESSAGE));
                 Long date = Long.parseLong(c.getString(c.getColumnIndex(COLUMN_DATE)));
                 String group = c.getString(c.getColumnIndex(COLUMN_GRP_ID));
                 String type = c.getString(c.getColumnIndex(COLUMN_TYPE));
-                notificationArrayList.add(new Notification(id,title,message,date,group,type));
+                notificationArrayList.add(new Notification(id, title, message, date, group, type));
             }
             c.moveToNext();
         }
         db.close();
         c.close();
         System.out.println(notificationArrayList);
-        return  notificationArrayList;
+        return notificationArrayList;
     }
 
     public ArrayList<Notification> getAllNotificationsWithResponses() {
         ArrayList<Notification> notificationArrayList = new ArrayList<>();
         SQLiteDatabase db = getWritableDatabase();
-        String query = "SELECT * FROM "+ TABLE_NOTIFICATIONS + " LEFT JOIN "+TABLE_RESPONSES+" USING("+COLUMN_NOTIF_ID+")"+";";
+        String query = "SELECT * FROM " + TABLE_NOTIFICATIONS + " LEFT JOIN " + TABLE_RESPONSES + " USING(" + COLUMN_NOTIF_ID + ")" + ";";
         System.out.println(query);
 
-        Cursor c = db.rawQuery(query,null);
+        Cursor c = db.rawQuery(query, null);
         c.moveToFirst();
 
-        while(!c.isAfterLast()){
-            if(c.getString(c.getColumnIndex(COLUMN_NOTIF_ID))!=null){
+        while (!c.isAfterLast()) {
+            if (c.getString(c.getColumnIndex(COLUMN_NOTIF_ID)) != null) {
                 String id = c.getString(c.getColumnIndex(COLUMN_NOTIF_ID));
                 String title = c.getString(c.getColumnIndex(COLUMN_TITLE));
                 String message = c.getString(c.getColumnIndex(COLUMN_MESSAGE));
@@ -165,7 +165,7 @@ public class DBHandler extends SQLiteOpenHelper {
                 String group = c.getString(c.getColumnIndex(COLUMN_GRP_ID));
                 String type = c.getString(c.getColumnIndex(COLUMN_TYPE));
                 String response = c.getString(c.getColumnIndex(COLUMN_RESPONSE));
-                Notification notification = new Notification(id,title,message,date,group,type);
+                Notification notification = new Notification(id, title, message, date, group, type);
                 notification.setResponse(response);
                 notificationArrayList.add(notification);
 
@@ -175,34 +175,37 @@ public class DBHandler extends SQLiteOpenHelper {
         db.close();
         c.close();
         System.out.println(notificationArrayList);
-        return  notificationArrayList;
+        return notificationArrayList;
     }
 
-    public void addNotification(Notification notification){
+    public void addNotification(Notification notification) {
         ContentValues values = new ContentValues();
         values.put(COLUMN_NOTIF_ID, notification.getId());
         values.put(COLUMN_TITLE, notification.getTitle());
         values.put(COLUMN_MESSAGE, (notification.getMessage()));
         values.put(COLUMN_DATE, (String.valueOf(notification.getDate())));
-        values.put(COLUMN_GRP_ID,notification.getGroup());
-        values.put(COLUMN_TYPE,notification.getType());
+        values.put(COLUMN_GRP_ID, notification.getGroup());
+        values.put(COLUMN_TYPE, notification.getType());
         SQLiteDatabase db = getWritableDatabase();
-        db.insert(TABLE_NOTIFICATIONS,null ,values);
+        db.insert(TABLE_NOTIFICATIONS, null, values);
         db.close();
     }
-    public void addResponse(Response response){
+
+    public void addResponse(Response response) {
         ContentValues values = new ContentValues();
-        values.put(COLUMN_RESPONSE_ID,response.getResponseID());
-        values.put(COLUMN_NOTIF_ID,response.getNotificationID());
-        values.put(COLUMN_RESPONSE,response.getMessage());
-        values.put(COLUMN_SENDER_ID,response.getSenderID());
-        values.put(COLUMN_RESPONSE_DATE,response.getTime());
+        values.put(COLUMN_RESPONSE_ID, response.getResponseID());
+        values.put(COLUMN_NOTIF_ID, response.getNotificationID());
+        values.put(COLUMN_RESPONSE, response.getMessage());
+        values.put(COLUMN_SENDER_ID, response.getSenderID());
+        values.put(COLUMN_RESPONSE_DATE, response.getTime());
         SQLiteDatabase db = getWritableDatabase();
-        db.insert(TABLE_RESPONSES,null,values);
+        db.insert(TABLE_RESPONSES, null, values);
         db.close();
     }
-   void clearTable(String tableName){
+
+    void clearTable(String tableName) {
         SQLiteDatabase db = getWritableDatabase();
-        db.delete(tableName,null,null);
+        db.delete(tableName, null, null);
         db.close();
     }
+}
