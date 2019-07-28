@@ -2,13 +2,11 @@ package org.odk.odknotifications.Model;
 
 public class Response {
     private String responseID;
-    private String notificationID;
     private String message;
     private String senderID;
     private long time;
 
-    public Response(String notificationID, String message, String senderID, long time) {
-        this.notificationID = notificationID;
+    public Response(String message, String senderID, long time) {
         this.message = message;
         this.senderID = senderID;
         this.time = time;
@@ -28,14 +26,6 @@ public class Response {
 
     public void setMessage(String message) {
         this.message = message;
-    }
-
-    public String getNotificationID() {
-        return notificationID;
-    }
-
-    public void setNotificationID(String notificationID) {
-        this.notificationID = notificationID;
     }
 
     public String getResponseID() {

@@ -23,12 +23,12 @@ public class ResponseHandler {
         boolean result = false;
         try{
             String username = preferences.getString("username","anonymous");
-            Response response = new Response(notificationID,message,username,time);
-            DatabaseReference responesRef = FirebaseDatabase.getInstance().getReference("/respones").push();
+            Response response = new Response(message,username,time);
+            DatabaseReference responesRef = FirebaseDatabase.getInstance().getReference("/responses/"+notificationID).push();
             String responseID = responesRef.getKey();
             responesRef.setValue(response);
             response.setResponseID(responseID);
-            dbHandler.addResponse(response);
+            dbHandler.addResponse(response,notificationID);
             result = true;
         }catch (Exception e){
             e.printStackTrace();

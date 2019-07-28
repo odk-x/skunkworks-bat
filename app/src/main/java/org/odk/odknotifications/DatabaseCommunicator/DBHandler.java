@@ -191,10 +191,10 @@ public class DBHandler extends SQLiteOpenHelper {
         db.close();
     }
 
-    public void addResponse(Response response) {
+    public void addResponse(Response response,String notificationID) {
         ContentValues values = new ContentValues();
         values.put(COLUMN_RESPONSE_ID, response.getResponseID());
-        values.put(COLUMN_NOTIF_ID, response.getNotificationID());
+        values.put(COLUMN_NOTIF_ID, notificationID);
         values.put(COLUMN_RESPONSE, response.getMessage());
         values.put(COLUMN_SENDER_ID, response.getSenderID());
         values.put(COLUMN_RESPONSE_DATE, response.getTime());
