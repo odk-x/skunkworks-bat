@@ -168,7 +168,6 @@ public class DBHandler extends SQLiteOpenHelper {
                 Notification notification = new Notification(id, title, message, date, group, type);
                 notification.setResponse(response);
                 notificationArrayList.add(notification);
-
             }
             c.moveToNext();
         }
@@ -195,7 +194,7 @@ public class DBHandler extends SQLiteOpenHelper {
         ContentValues values = new ContentValues();
         values.put(COLUMN_RESPONSE_ID, response.getResponseID());
         values.put(COLUMN_NOTIF_ID, notificationID);
-        values.put(COLUMN_RESPONSE, response.getMessage());
+        values.put(COLUMN_RESPONSE, response.getResponse());
         values.put(COLUMN_SENDER_ID, response.getSenderID());
         values.put(COLUMN_RESPONSE_DATE, response.getTime());
         SQLiteDatabase db = getWritableDatabase();

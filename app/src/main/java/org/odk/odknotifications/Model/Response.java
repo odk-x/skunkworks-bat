@@ -2,12 +2,12 @@ package org.odk.odknotifications.Model;
 
 public class Response {
     private String responseID;
-    private String message;
+    private String response;
     private String senderID;
     private long time;
 
-    public Response(String message, String senderID, long time) {
-        this.message = message;
+    public Response(String response, String senderID, long time) {
+        this.response = response;
         this.senderID = senderID;
         this.time = time;
     }
@@ -18,14 +18,6 @@ public class Response {
 
     public void setSenderID(String senderID) {
         this.senderID = senderID;
-    }
-
-    public String getMessage() {
-        return message;
-    }
-
-    public void setMessage(String message) {
-        this.message = message;
     }
 
     public String getResponseID() {
@@ -42,5 +34,13 @@ public class Response {
 
     public void setTime(long time) {
         this.time = time;
+    }
+
+    public String getResponse() {
+        return response;
+    }
+
+    public void setResponse(String response) {
+        this.response = response;
     }
 }
