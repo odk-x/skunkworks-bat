@@ -1,10 +1,12 @@
 package org.odk.odknotifications.Activities;
 
+import android.app.NotificationManager;
 import android.app.ProgressDialog;
 import android.app.SearchManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
@@ -16,6 +18,8 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
 
 import androidx.appcompat.widget.SearchView;
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.RemoteInput;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.core.view.GravityCompat;
@@ -61,6 +65,7 @@ import org.odk.odknotifications.Listeners.SortingOptionListener;
 import org.odk.odknotifications.Model.Group;
 import org.odk.odknotifications.Model.Notification;
 import org.odk.odknotifications.R;
+import org.odk.odknotifications.Services.MyFirebaseMessagingService;
 import org.odk.odknotifications.SubscribeNotificationGroup;
 import org.odk.odknotifications.UnsubscribeNotificationGroups;
 import org.opendatakit.application.CommonApplication;
@@ -84,6 +89,8 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+
+import static org.odk.odknotifications.Services.MyFirebaseMessagingService.NOTIFICATION_ID;
 
 
 public class MainActivity extends AppCompatActivity
@@ -143,7 +150,7 @@ public class MainActivity extends AppCompatActivity
         }
         this.appName = appName;
 
-        ArrayList<Notification> notificationArrayList = dbHandler.getAllNotifications();
+        ArrayList<Notification> notificationArrayList = dbHandler.getAllNotificationsWithResponses();
         RecyclerView recyclerView = findViewById(R.id.rv_notifications);
         notificationAdapter = new NotificationAdapter(notificationArrayList,this);
         recyclerView.setAdapter(notificationAdapter);
@@ -313,6 +320,7 @@ public class MainActivity extends AppCompatActivity
 
     private void syncCloudDatabase() {
         groupArrayList = getGroups();
+        new UnsubscribeNotificationGroups(this).execute();
         addGroupsFromFirebase();
         joinODKGroups(groupArrayList);
         addMenuItemInNavMenuDrawer();
@@ -323,7 +331,7 @@ public class MainActivity extends AppCompatActivity
         dialog.setMessage("Please Wait! Loading groups from firebase...");
         dialog.show();
         dialog.setCancelable(false);
-        DatabaseReference mRef  = FirebaseDatabase.getInstance().getReference().child("clients").child(getActiveUser()).child("groups");
+        DatabaseReference mRef  = FirebaseDatabase.getInstance().getReference().child("clients").child(loggedInUsername).child("groups");
 
         mRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
@@ -333,7 +341,7 @@ public class MainActivity extends AppCompatActivity
                     String id = (String) group.child("id").getValue();
                     Group grp = new  Group(id,name,0);
                     groupArrayList.add(grp);
-                    new SubscribeNotificationGroup(MainActivity.this, id, getActiveUser());
+                    new SubscribeNotificationGroup(MainActivity.this, id, loggedInUsername).execute();
                     dbHandler.addNewGroup(grp);
                 }
                 dialog.dismiss();
@@ -391,11 +399,18 @@ public class MainActivity extends AppCompatActivity
             mIOdkDataDatabaseListener.databaseAvailable();
         }
         loggedInUsername = getActiveUser();
+        Log.e("Success", "Database available " + loggedInUsername);
+        if(loggedInUsername!=null){
+            if(!(loggedInUsername.compareTo("anonymous")==0)&& loggedInUsername.length()>8 && loggedInUsername.substring(0,9).compareTo("username:")==0){
+                loggedInUsername = loggedInUsername.substring(9);
+            }
+            name_tv.setText(loggedInUsername);
+            SharedPreferences preferences = getSharedPreferences(getPackageName(),MODE_PRIVATE);
+            preferences.edit().putString("username",loggedInUsername).apply();
+        }
         if(hasBeenInitialized){
             getDeepLink();
         }
-        Log.e("Success", "Database available" + loggedInUsername);
-        if(loggedInUsername!=null)name_tv.setText(loggedInUsername);
     }
 
     @Override
@@ -459,8 +474,8 @@ public class MainActivity extends AppCompatActivity
                                     @Override
                                     public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                                         Group group = new Group((String)dataSnapshot.child("id").getValue(),(String)dataSnapshot.child("name").getValue(),0);
-                                        new SubscribeNotificationGroup(MainActivity.this,group.getId(),getActiveUser()).execute();
-                                        DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference().child("clients").child(getActiveUser()).child("groups").push();
+                                        new SubscribeNotificationGroup(MainActivity.this,group.getId(),loggedInUsername).execute();
+                                        DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference().child("clients").child(loggedInUsername).child("groups").push();
                                         databaseReference.child("id").setValue(group.getId());
                                         databaseReference.child("name").setValue(group.getName());
                                         dbHandler.addNewGroup(group);
@@ -525,9 +540,8 @@ public class MainActivity extends AppCompatActivity
    }
 
     public void joinODKGroups(ArrayList<Group> groupArrayList){
-        new UnsubscribeNotificationGroups(this).execute();
         for(Group group: groupArrayList) {
-            new SubscribeNotificationGroup(this, group.getId(), getActiveUser()).execute();
+            new SubscribeNotificationGroup(this, group.getId(), loggedInUsername).execute();
         }
         dbHandler.newGroupDatabase(groupArrayList);
     }

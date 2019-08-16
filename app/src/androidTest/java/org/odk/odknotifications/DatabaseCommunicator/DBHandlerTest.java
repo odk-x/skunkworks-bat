@@ -55,7 +55,7 @@ public class DBHandlerTest{
 
     @Test
     public void addNotificationTest() {
-        Notification notification = new Notification("test_notification","This is a test notification", Calendar.getInstance().getTimeInMillis(),"test_group");
+        Notification notification = new Notification("test_id","test_notification","This is a test notification", Calendar.getInstance().getTimeInMillis(),"test_group",Notification.SIMPLE);
         dbHandler.addNotification(notification);
         List<Notification> notifications = dbHandler.getNotifications("test_group");
         Assert.assertTrue(EqualsBuilder.reflectionEquals(notification,notifications.get(0)));

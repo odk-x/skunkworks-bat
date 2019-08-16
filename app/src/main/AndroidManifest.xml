@@ -55,6 +55,10 @@
             </intent-filter>
         </service>
         <service android:name=".Services.MyJobService"/>
+        <receiver
+            android:name=".Services.NotificationReplyReceiver"
+            android:enabled="true"
+            android:exported="false"/>
 
     </application>
 

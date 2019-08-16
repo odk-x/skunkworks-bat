@@ -8,6 +8,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Filter;
 import android.widget.Filterable;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import org.odk.odknotifications.Model.DateCompare;
@@ -61,13 +62,25 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
     }
 
     public class MyViewHolder extends RecyclerView.ViewHolder {
-        public TextView title, message, date;
+        public TextView title, message, date,response;
+        public LinearLayout responseLayout;
 
         MyViewHolder(View view) {
             super(view);
             title = (TextView) view.findViewById(R.id.title);
             message = (TextView) view.findViewById(R.id.message);
             date = (TextView) view.findViewById(R.id.date);
+            response = view.findViewById(R.id.response);
+            responseLayout = view.findViewById(R.id.responseLayout);
+        }
+        void bind(Notification notification){
+            title.setText(notification.getTitle());
+            message.setText(notification.getMessage());
+            date.setText(notification.getStringDate());
+            if(notification.getType().compareTo(Notification.INTERACTIVE)==0){
+                response.setText(notification.getResponse());
+                responseLayout.setVisibility(View.VISIBLE);
+            }
         }
     }
 
@@ -92,11 +105,9 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
     }
 
     @Override
-    public void onBindViewHolder(MyViewHolder holder, int position) {
-        Notification notification = notificationsFiltered.get(position);
-        holder.title.setText(notification.getTitle());
-        holder.message.setText(notification.getMessage());
-        holder.date.setText(notification.getStringDate());
+    public void onBindViewHolder(MyViewHolder holder, final int position) {
+        final Notification notification = notificationsFiltered.get(position);
+        holder.bind(notification);
     }
 
     @Override
