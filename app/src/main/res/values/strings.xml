@@ -1,8 +1,8 @@
 <resources>
-    <string name="app_name">ODK Notifications</string>
+    <string name="app_name">ODK-X Notify</string>
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
-    <string name="nav_header_title">Bat</string>
+    <string name="nav_header_title">ODK-X Notify</string>
     <string name="nav_header_subtitle">android.studio@android.com</string>
     <string name="nav_header_desc">Navigation header</string>
     <string name="action_settings">Settings</string>
@@ -12,11 +12,11 @@
     <string name="sync_not_found">dummy</string>
     <string name="sync">Sync</string>
     <string name="not_now">not now</string>
-    <string name="storage_permission_rationale">ODK Notification requires Storage Permission to access config files.</string>
+    <string name="storage_permission_rationale">ODK-X Notify requires Storage Permission to access config files.</string>
     <string name="allow">Allow</string>
     <string name="permission_denied">Permission denied</string>
     <string name="error">Error</string>
-    <string name="json_file_missing_error_message">Server has not been configured correctly. Please, check the server settings in ODK Services.</string>
+    <string name="json_file_missing_error_message">Server has not been configured correctly. Please, check the server settings in ODK-X Services.</string>
 
     <string name="date_old_to_new">Date - Old to New</string>
     <string name="date_new_to_old">Date - New to Old</string>

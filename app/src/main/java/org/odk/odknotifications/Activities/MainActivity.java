@@ -104,7 +104,7 @@ public class MainActivity extends AppCompatActivity
     private DatabaseConnectionListener mIOdkDataDatabaseListener;
     private TextView name_tv;
     private String loggedInUsername;
-    private String TAG = "ODK Notifications";
+    private String TAG = "ODK-X Notify";
     private PropertiesSingleton mPropSingleton;
     private DBHandler dbHandler;
     private ArrayList<Group> groupArrayList;

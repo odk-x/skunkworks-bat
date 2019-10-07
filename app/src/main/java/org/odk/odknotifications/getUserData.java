@@ -8,7 +8,7 @@ import org.opendatakit.application.CommonApplication;
 
 public class getUserData extends CommonApplication {
     @SuppressWarnings("unused")
-    private static final String TAG = "ODK Notifications";
+    private static final String TAG = "ODK-X Notify";
 
     public static final String t = "Survey";
 
