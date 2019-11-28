@@ -115,6 +115,7 @@ public class MainActivity extends AppCompatActivity
     private NotificationAdapter notificationAdapter;
     private String filteredGrp = "None";
     private String sortedOrder;
+    private MenuItem syncitem;
 
     protected static final String[] STORAGE_PERMISSION = new String[] {
             android.Manifest.permission.READ_EXTERNAL_STORAGE
@@ -125,7 +126,7 @@ public class MainActivity extends AppCompatActivity
         List<FirebaseApp> firebaseApps = FirebaseApp.getApps(this);
         for(FirebaseApp app : firebaseApps){
             if(app.getName().equals(FirebaseApp.DEFAULT_APP_NAME)){
-                hasBeenInitialized=true;
+                isInitialized(true);
             }
         }
         setContentView(R.layout.activity_main);
@@ -302,6 +303,8 @@ public class MainActivity extends AppCompatActivity
                 return false;
             }
         });
+        syncitem=(MenuItem)menu.findItem(R.id.action_sync);
+        syncitem.setEnabled(hasBeenInitialized);
         return super.onCreateOptionsMenu(menu);
     }
 
@@ -600,12 +603,17 @@ public class MainActivity extends AppCompatActivity
                         .setDatabaseUrl(databaseUrl)
                         .setStorageBucket(storageBucket);
                 FirebaseApp.initializeApp(this, builder.build());
-                hasBeenInitialized = true;
+                isInitialized(true);
             }
         } catch (JSONException e) {
             e.printStackTrace();
         }
 
+    }
+
+    private void isInitialized(boolean b) {
+        hasBeenInitialized=b;
+        syncitem.setEnabled(b);
     }
 
     private void requestStoragePermission() {
@@ -643,5 +651,4 @@ public class MainActivity extends AppCompatActivity
         sortedOrder = field;
     }
 }
-
 
