@@ -613,6 +613,7 @@ public class MainActivity extends AppCompatActivity
 
     private void isInitialized(boolean b) {
         hasBeenInitialized=b;
+        if(syncitem!=null)
         syncitem.setEnabled(b);
     }
 
