@@ -5,6 +5,7 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.BitmapFactory;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Build;
@@ -24,6 +25,10 @@ import org.odk.odknotifications.DatabaseCommunicator.DBHandler;
 import org.odk.odknotifications.Model.Notification;
 import org.odk.odknotifications.R;
 
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.net.URL;
 import java.util.Map;
 import java.util.Random;
 
@@ -61,16 +66,47 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         if (remoteMessage.getData().size() > 0) {
             Log.e(TAG, "Message data payload: " + remoteMessage.getData());
             Map<String,String> receivedData = remoteMessage.getData();
-            Notification notification = new Notification(receivedData.get("id"),receivedData.get("title"), receivedData.get("message"), remoteMessage.getSentTime(),receivedData.get("group"), receivedData.get("type"));
-            if(notification.getType().compareTo(Notification.SIMPLE)==0){
-                sendSimpleNotification(notification);
+            if(receivedData.containsKey("img")&&receivedData.get("img")!=null) {
+                Random random = new Random();
+                File img_file = new File(getApplicationContext().getFilesDir(), random.nextInt(100000) +".png");
+                BufferedInputStream inputStream;
+                FileOutputStream fileOutputStream ;
+                try {
+                    inputStream = new BufferedInputStream( new URL(receivedData.get("img")).openStream());
+                    fileOutputStream = new FileOutputStream(img_file);
+                    byte dataBuffer[] = new byte[1024];
+                    int bytesRead;
+                    while ((bytesRead = inputStream.read(dataBuffer, 0, 1024)) != -1) {
+                        fileOutputStream.write(dataBuffer, 0, bytesRead);
+                    }
+                    fileOutputStream.flush();
+                    fileOutputStream.close();
+                    inputStream.close();
+                } catch (Exception e) {
+                    System.out.println("Error in downloading file");
+                    e.printStackTrace();
+                }
+                finally {
+                    Notification notification = new Notification(receivedData.get("id"), receivedData.get("title"), receivedData.get("message"), remoteMessage.getSentTime(), receivedData.get("group"), receivedData.get("type"), img_file.getAbsolutePath());
+                    if (notification.getType().compareTo(Notification.SIMPLE) == 0) {
+                        sendSimpleNotification(notification);
+                    } else if (notification.getType().compareTo(Notification.INTERACTIVE) == 0) {
+                        sendInteractiveNotification(notification);
+                    }
+                }
             }
-            else if(notification.getType().compareTo(Notification.INTERACTIVE)==0){
-                sendInteractiveNotification(notification);
+            else{
+                Notification notification = new Notification(receivedData.get("id"), receivedData.get("title"), receivedData.get("message"), remoteMessage.getSentTime(), receivedData.get("group"), receivedData.get("type"), null);
+                if (notification.getType().compareTo(Notification.SIMPLE) == 0) {
+                    sendSimpleNotification(notification);
+                } else if (notification.getType().compareTo(Notification.INTERACTIVE) == 0) {
+                    sendInteractiveNotification(notification);
+                }
+            }
+
             }
 
 
-        }
         // Check if message contains a notification payload.
         if (remoteMessage.getNotification() != null) {
             Log.e(TAG, "Message Notification Body: " + remoteMessage.getNotification().getBody());
@@ -109,6 +145,9 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                         .setAutoCancel(true)
                         .setSound(defaultSoundUri)
                         .setContentIntent(pendingIntent);
+        if(notification.getImg_uri()!=null){
+            notificationBuilder.setStyle(new NotificationCompat.BigPictureStyle().bigPicture(BitmapFactory.decodeFile(notification.getImg_uri())));
+        }
 
         NotificationManager notificationManager =
                 (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
@@ -170,6 +209,9 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                         .addAction(replyAction)
                         .setSound(defaultSoundUri)
                         .setContentIntent(pendingIntent);
+        if(notification.getImg_uri()!=null){
+            notificationBuilder.setStyle(new NotificationCompat.BigPictureStyle().bigPicture(BitmapFactory.decodeFile(notification.getImg_uri())));
+        }
 
         PendingIntent dismissIntent = PendingIntent.getActivity(getBaseContext(), 76, intent, PendingIntent.FLAG_CANCEL_CURRENT);
         notificationBuilder.addAction(android.R.drawable.ic_menu_close_clear_cancel, "DISMISS", dismissIntent);

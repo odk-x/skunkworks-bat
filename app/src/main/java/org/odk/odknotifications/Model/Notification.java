@@ -13,14 +13,16 @@ public class Notification {
     private String group;
     private String type;
     private String response;
+    private String img_uri;
 
-    public Notification(String id, String title, String message, Long date, String group, String type) {
+    public Notification(String id, String title, String message, Long date, String group, String type,String img_uri) {
         this.id = id;
         this.title = title;
         this.message = message;
         this.date = date;
         this.group = group;
         this.type = type;
+        this.img_uri=img_uri;
     }
 
     public String getTitle() {
@@ -82,4 +84,13 @@ public class Notification {
     public void setResponse(String response) {
         this.response = response;
     }
+
+    public String getImg_uri(){
+        return img_uri;
+    }
+
+    public void setImg_uri(String img_uri){
+        this.img_uri=img_uri;
+    }
+
 }

@@ -3,11 +3,13 @@ package org.odk.odknotifications.Adapters;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Context;
+import android.graphics.BitmapFactory;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Filter;
 import android.widget.Filterable;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -64,6 +66,7 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
     public class MyViewHolder extends RecyclerView.ViewHolder {
         public TextView title, message, date,response;
         public LinearLayout responseLayout;
+        public ImageView imageView;
 
         MyViewHolder(View view) {
             super(view);
@@ -72,11 +75,14 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
             date = (TextView) view.findViewById(R.id.date);
             response = view.findViewById(R.id.response);
             responseLayout = view.findViewById(R.id.responseLayout);
+            imageView=(ImageView)view.findViewById(R.id.notificationImageView);
         }
         void bind(Notification notification){
             title.setText(notification.getTitle());
             message.setText(notification.getMessage());
             date.setText(notification.getStringDate());
+            imageView.setImageBitmap(BitmapFactory.decodeFile(notification.getImg_uri()));
+
             if(notification.getType().compareTo(Notification.INTERACTIVE)==0){
                 response.setText(notification.getResponse());
                 responseLayout.setVisibility(View.VISIBLE);

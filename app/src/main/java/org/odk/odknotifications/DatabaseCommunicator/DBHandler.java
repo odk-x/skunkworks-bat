@@ -32,6 +32,7 @@ public class DBHandler extends SQLiteOpenHelper {
     private static final String COLUMN_SENDER_ID = "sender_id";
     private static final String COLUMN_RESPONSE = "response";
     private static final String COLUMN_RESPONSE_DATE = "response_date";
+    private static final String COLUMN_IMG_URI = "img_uri";
 
 
     public DBHandler(Context context, String name, SQLiteDatabase.CursorFactory factory, int version) {
@@ -41,10 +42,10 @@ public class DBHandler extends SQLiteOpenHelper {
     @Override
     public void onCreate(SQLiteDatabase db) {
         String query = "CREATE TABLE IF NOT EXISTS " + TABLE_GROUPS + "(" +
-             COLUMN_NAME + " TEXT ," +
-             COLUMN_GRP_ID + " TEXT PRIMARY KEY," +
-             COLUMN_SNOOZE+" INTEGER "+
-             ");";
+                COLUMN_NAME + " TEXT ," +
+                COLUMN_GRP_ID + " TEXT PRIMARY KEY," +
+                COLUMN_SNOOZE+" INTEGER "+
+                ");";
         db.execSQL(query);
 
         String query2 = "CREATE TABLE IF NOT EXISTS " + TABLE_NOTIFICATIONS + "(" +
@@ -54,7 +55,8 @@ public class DBHandler extends SQLiteOpenHelper {
                 COLUMN_MESSAGE + " TEXT, " +
                 COLUMN_DATE + " TEXT, " +
                 COLUMN_GRP_ID+ " TEXT, "+
-                COLUMN_TYPE + " TEXT " +
+                COLUMN_TYPE + " TEXT, " +
+                COLUMN_IMG_URI + " TEXT " +
                 ");";
         db.execSQL(query2);
         String query3 = "CREATE TABLE IF NOT EXISTS " + TABLE_RESPONSES + "(" +
@@ -137,7 +139,8 @@ public class DBHandler extends SQLiteOpenHelper {
                 Long date = Long.parseLong(c.getString(c.getColumnIndex(COLUMN_DATE)));
                 String group = c.getString(c.getColumnIndex(COLUMN_GRP_ID));
                 String type = c.getString(c.getColumnIndex(COLUMN_TYPE));
-                notificationArrayList.add(new Notification(id, title, message, date, group, type));
+                String img_uri = c.getString(c.getColumnIndex(COLUMN_IMG_URI));
+                notificationArrayList.add(new Notification(id, title, message, date, group, type, img_uri));
             }
             c.moveToNext();
         }
@@ -165,7 +168,8 @@ public class DBHandler extends SQLiteOpenHelper {
                 String group = c.getString(c.getColumnIndex(COLUMN_GRP_ID));
                 String type = c.getString(c.getColumnIndex(COLUMN_TYPE));
                 String response = c.getString(c.getColumnIndex(COLUMN_RESPONSE));
-                Notification notification = new Notification(id, title, message, date, group, type);
+                String img_uri=c.getString(c.getColumnIndex(COLUMN_IMG_URI));
+                Notification notification = new Notification(id, title, message, date, group, type, img_uri);
                 notification.setResponse(response);
                 notificationArrayList.add(notification);
             }
@@ -185,6 +189,7 @@ public class DBHandler extends SQLiteOpenHelper {
         values.put(COLUMN_DATE, (String.valueOf(notification.getDate())));
         values.put(COLUMN_GRP_ID, notification.getGroup());
         values.put(COLUMN_TYPE, notification.getType());
+        values.put(COLUMN_IMG_URI,notification.getImg_uri());
         SQLiteDatabase db = getWritableDatabase();
         db.insert(TABLE_NOTIFICATIONS, null, values);
         db.close();
