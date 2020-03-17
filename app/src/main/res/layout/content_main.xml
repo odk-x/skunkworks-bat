@@ -45,6 +45,16 @@
                 android:text="Filter"
                 app:iconGravity="textStart"/>
         </LinearLayout>
+        <TextView
+            android:id="@+id/no_data_text_view"
+            android:textColor="@color/grey"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:textSize="18dp"
+            android:gravity="center"
+            android:foregroundGravity="center"
+            android:visibility="invisible"
+            ></TextView>
 
 
         <androidx.recyclerview.widget.RecyclerView
