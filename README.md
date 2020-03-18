@@ -26,6 +26,7 @@ The mobile application an Android app for field workers that receives notificati
 1. Open the project in the folder of your clone from Android Studio. 
 2. Create a Firebase project and add the google-services.json file in your android app module root directory. Step by step instructions for creating a Firebase project can be found [here](https://drive.google.com/open?id=10_9oU_8zrek7lt7BRYmJJwo22rs51uAw). 
 3. To run the project, click on the green arrow at the top of the screen. The emulator is very slow so we generally recommend using a physical device when possible.
+4. Add the google-services.json file (obtained in step 2) in your phone's external storage at the following location: /opendatakit/default/config/assets/google-services.json. 
 
 ## Prerequisites
 
