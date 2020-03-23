@@ -30,6 +30,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import android.util.Log;
 import android.view.Menu;
@@ -94,7 +95,7 @@ import static org.odk.odknotifications.Services.MyFirebaseMessagingService.NOTIF
 
 
 public class MainActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener, DatabaseConnectionListener, SortingOptionListener, FilterNotificationListener {
+        implements NavigationView.OnNavigationItemSelectedListener, DatabaseConnectionListener, SortingOptionListener, FilterNotificationListener, SwipeRefreshLayout.OnRefreshListener {
 
     private static final String SORTED_ORDER = "sorted_order";
     private static final String FILTERED_GRP = "filtered_grp";
@@ -116,6 +117,8 @@ public class MainActivity extends AppCompatActivity
     private String filteredGrp = "None";
     private String sortedOrder;
     private MenuItem syncitem;
+    private SwipeRefreshLayout swipeRefreshLayout;
+    private ArrayList<Notification> notificationArrayList;
 
     protected static final String[] STORAGE_PERMISSION = new String[] {
             android.Manifest.permission.READ_EXTERNAL_STORAGE
@@ -151,7 +154,7 @@ public class MainActivity extends AppCompatActivity
         }
         this.appName = appName;
 
-        ArrayList<Notification> notificationArrayList = dbHandler.getAllNotificationsWithResponses();
+        notificationArrayList = dbHandler.getAllNotificationsWithResponses();
         RecyclerView recyclerView = findViewById(R.id.rv_notifications);
         notificationAdapter = new NotificationAdapter(notificationArrayList,this);
         recyclerView.setAdapter(notificationAdapter);
@@ -189,6 +192,8 @@ public class MainActivity extends AppCompatActivity
             }
         });
         addMenuItemInNavMenuDrawer();
+        swipeRefreshLayout = findViewById(R.id.swipeRefreshLayout);
+         swipeRefreshLayout.setOnRefreshListener(this);
     }
 
     @Override
@@ -651,5 +656,11 @@ public class MainActivity extends AppCompatActivity
         notificationAdapter.sort(field);
         sortedOrder = field;
     }
-}
 
+    @Override
+    public void onRefresh() {
+       notificationArrayList=dbHandler.getAllNotificationsWithResponses();
+       notificationAdapter.notifyDataSetChanged();
+       swipeRefreshLayout.setRefreshing(false);
+    }
+}
