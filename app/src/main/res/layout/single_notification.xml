@@ -44,20 +44,36 @@
 
         <LinearLayout
             android:id="@+id/responseLayout"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="7dp"
-            android:visibility="gone">
+            android:visibility="gone" >
             <TextView
                 android:text="Your Response: "
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"/>
-            <TextView
+                android:layout_height="wrap_content"
+                android:gravity="left"/>
+            <EditText
                 android:id="@+id/response"
                 android:layout_marginStart="5dp"
-                android:text="The response will be shown here."
+                android:text="Enter your reply here"
+                android:textSize="15dp"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content" />
+            <View
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                />
+            <Button
+                android:id="@+id/sendResponse"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:minHeight="0dp"
+                android:minWidth="0dp"
+                android:textSize="9dp"
+                android:text="Send"
+                />
         </LinearLayout>
         <ImageView
             android:id="@+id/notificationImageView"
