@@ -329,32 +329,42 @@ public class MainActivity extends AppCompatActivity
         addMenuItemInNavMenuDrawer();
     }
 
-    private void addGroupsFromFirebase() {
+        private void addGroupsFromFirebase() {
         final ProgressDialog dialog = new ProgressDialog(this);
         dialog.setMessage("Please Wait! Loading groups from firebase...");
         dialog.show();
         dialog.setCancelable(false);
-        DatabaseReference mRef  = FirebaseDatabase.getInstance().getReference().child("clients").child(loggedInUsername).child("groups");
-
-        mRef.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                for(DataSnapshot group: dataSnapshot.getChildren()){
-                    String name =(String) group.child("name").getValue();
-                    String id = (String) group.child("id").getValue();
-                    Group grp = new  Group(id,name,0);
-                    groupArrayList.add(grp);
-                    new SubscribeNotificationGroup(MainActivity.this, id, loggedInUsername).execute();
-                    dbHandler.addNewGroup(grp);
+        try {
+            DatabaseReference mRef = FirebaseDatabase.getInstance().getReference().child("clients").child(loggedInUsername).child("groups");
+            mRef.addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    for (DataSnapshot group : dataSnapshot.getChildren()) {
+                        String name = (String) group.child("name").getValue();
+                        String id = (String) group.child("id").getValue();
+                        Group grp = new Group(id, name, 0);
+                        groupArrayList.add(grp);
+                        new SubscribeNotificationGroup(MainActivity.this, id, loggedInUsername).execute();
+                        dbHandler.addNewGroup(grp);
+                    }
+                    dialog.dismiss();
                 }
-                dialog.dismiss();
-            }
 
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
 
+                }
+            });
+        }
+        catch (NullPointerException e){
+            e.printStackTrace();
+        }
+        finally {
+            if(dialog.isShowing());
+            {
+             dialog.dismiss();
             }
-        });
+        }
     }
 
     @SuppressWarnings("StatementWithEmptyBody")
