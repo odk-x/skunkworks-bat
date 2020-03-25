@@ -195,6 +195,13 @@ public class DBHandler extends SQLiteOpenHelper {
         db.close();
     }
 
+    public void removeNotification(String id){
+        SQLiteDatabase db = getWritableDatabase();
+        String query = "DELETE FROM " + TABLE_NOTIFICATIONS + " WHERE " + COLUMN_NOTIF_ID  + "=" + id + ";";
+        System.out.println(query);
+        db.rawQuery(query, null);
+    }
+
     public void addResponse(Response response,String notificationID) {
         ContentValues values = new ContentValues();
         values.put(COLUMN_RESPONSE_ID, response.getResponseID());
