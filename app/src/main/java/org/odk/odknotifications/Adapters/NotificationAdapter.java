@@ -2,17 +2,22 @@ package org.odk.odknotifications.Adapters;
 
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.graphics.BitmapFactory;
+import android.provider.MediaStore;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Filter;
 import android.widget.Filterable;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.PopupMenu;
 import android.widget.TextView;
 
+import org.odk.odknotifications.DatabaseCommunicator.DBHandler;
 import org.odk.odknotifications.Model.DateCompare;
 import org.odk.odknotifications.Model.MessageCompare;
 import org.odk.odknotifications.Model.Notification;
@@ -63,10 +68,12 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
         notifyDataSetChanged();
     }
 
-    public class MyViewHolder extends RecyclerView.ViewHolder {
-        public TextView title, message, date,response;
+    public class MyViewHolder extends RecyclerView.ViewHolder implements View.OnLongClickListener {
+        public TextView title, message, date, response;
         public LinearLayout responseLayout;
         public ImageView imageView;
+        public String image_uri = null;
+        public String id = null;
 
         MyViewHolder(View view) {
             super(view);
@@ -75,18 +82,61 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
             date = (TextView) view.findViewById(R.id.date);
             response = view.findViewById(R.id.response);
             responseLayout = view.findViewById(R.id.responseLayout);
-            imageView=(ImageView)view.findViewById(R.id.notificationImageView);
+            imageView = (ImageView) view.findViewById(R.id.notificationImageView);
+            view.setOnLongClickListener(this);
         }
-        void bind(Notification notification){
+
+        void bind(Notification notification) {
             title.setText(notification.getTitle());
             message.setText(notification.getMessage());
             date.setText(notification.getStringDate());
             imageView.setImageBitmap(BitmapFactory.decodeFile(notification.getImg_uri()));
-
-            if(notification.getType().compareTo(Notification.INTERACTIVE)==0){
+            image_uri = notification.getImg_uri();
+            id=notification.getId();
+            if (notification.getType().compareTo(Notification.INTERACTIVE) == 0) {
                 response.setText(notification.getResponse());
                 responseLayout.setVisibility(View.VISIBLE);
             }
+        }
+
+        @Override
+        public boolean onLongClick(View view) {
+            final PopupMenu popup = new PopupMenu(context, view);
+            //inflating menu from xml resource
+            popup.inflate(R.menu.options_menu);
+            if(image_uri==null)
+            {
+                popup.getMenu().findItem(R.id.menu1).setEnabled(false); // if image is not there in notification disable the save to gallery button
+            }
+            popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+                @Override
+                public boolean onMenuItemClick(MenuItem item) {
+                    switch (item.getItemId()) {
+                        case R.id.menu1:
+                            addImageToGallery(image_uri,context);
+                            break;
+                        case R.id.menu2:
+                            DBHandler dbHandler = dbHandler = new DBHandler(context,null,null,1);
+                            dbHandler.removeNotification(id);
+                            notifyItemRemoved(getAdapterPosition());
+                            break;
+                    }
+                    return false;
+                }
+            });
+            //displaying the popup
+            popup.show();
+            return true;
+        }
+        public void addImageToGallery(final String filePath, final Context context) {
+
+            ContentValues values = new ContentValues();
+
+            values.put(MediaStore.Images.Media.DATE_TAKEN, System.currentTimeMillis());
+            values.put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg");
+            values.put(MediaStore.MediaColumns.DATA, filePath);
+
+            context.getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
         }
     }
 
