@@ -194,6 +194,11 @@ public class MainActivity extends AppCompatActivity
         addMenuItemInNavMenuDrawer();
         swipeRefreshLayout = findViewById(R.id.swipeRefreshLayout);
          swipeRefreshLayout.setOnRefreshListener(this);
+         if(notificationArrayList.size()==0) {
+            TextView textView = findViewById(R.id.no_data_text_view);
+            textView.setText(R.string.No_data);
+            textView.setVisibility(View.VISIBLE);
+        }
     }
 
     @Override
