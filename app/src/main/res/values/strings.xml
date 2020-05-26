@@ -22,5 +22,6 @@
     <string name="date_new_to_old">Date - New to Old</string>
     <string name="message">Message</string>
     <string name="title">Title</string>
+    <string name="No_data">No data available</string>
 
 </resources>
