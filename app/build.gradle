@@ -8,6 +8,7 @@ android {
         targetSdkVersion 28
         versionCode 1
         versionName "1.0"
+        multiDexEnabled true
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
@@ -38,6 +39,8 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
     androidTestImplementation 'androidx.test.espresso:espresso-intents:3.2.0'
     androidTestImplementation 'androidx.test.espresso:espresso-contrib:3.2.0'
+
+    implementation 'androidx.multidex:multidex:2.0.1'
 
     implementation(group: 'org.opendatakit', name: 'masterBasicAndroidlibrary', version: 'rev228', classifier: 'masterBasicRelease', ext: 'aar')
     implementation(group: 'org.opendatakit', name: 'masterBasicAndroidcommon', version: 'rev228', classifier: 'masterBasicRelease', ext: 'aar')
