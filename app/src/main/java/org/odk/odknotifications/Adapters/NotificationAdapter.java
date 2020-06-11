@@ -7,6 +7,8 @@ import android.graphics.BitmapFactory;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.Filter;
 import android.widget.Filterable;
 import android.widget.ImageView;
@@ -29,7 +31,14 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
     private List<Notification> notifications;
     private List<Notification> notificationsFiltered;
     private Context context;
+    private onButtonClickListener listener;
 
+    public interface onButtonClickListener{
+        boolean onSendResponseButtonClick(int position , String response);
+    }
+    public void setonButtonClickListener(onButtonClickListener listener){
+        this.listener = listener;
+    }
     public void sort(String field) {
         if(field.compareTo(context.getString(R.string.date_old_to_new))==0){
             Collections.sort(notificationsFiltered,new DateCompare());
@@ -64,11 +73,12 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
     }
 
     public class MyViewHolder extends RecyclerView.ViewHolder {
-        public TextView title, message, date,response;
+        public TextView title, message, date;
         public LinearLayout responseLayout;
         public ImageView imageView;
-
-        MyViewHolder(View view) {
+        public EditText response;
+        public Button sendResponseButton;
+        MyViewHolder(View view){
             super(view);
             title = (TextView) view.findViewById(R.id.title);
             message = (TextView) view.findViewById(R.id.message);
@@ -76,6 +86,24 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
             response = view.findViewById(R.id.response);
             responseLayout = view.findViewById(R.id.responseLayout);
             imageView=(ImageView)view.findViewById(R.id.notificationImageView);
+            sendResponseButton = view.findViewById(R.id.sendResponse);
+
+            sendResponseButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                   if(listener != null) {
+                        int position = getAdapterPosition();
+                        if(position != RecyclerView.NO_POSITION) {
+                            boolean responseSent = listener.onSendResponseButtonClick(position,response.getText().toString());
+                            if(responseSent) {
+                                response.setEnabled(false);
+                                sendResponseButton.setVisibility(View.GONE);
+                            }
+                        }
+                    }
+                }
+            });
+
         }
         void bind(Notification notification){
             title.setText(notification.getTitle());
@@ -84,7 +112,12 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
             imageView.setImageBitmap(BitmapFactory.decodeFile(notification.getImg_uri()));
 
             if(notification.getType().compareTo(Notification.INTERACTIVE)==0){
-                response.setText(notification.getResponse());
+                if(notification.getResponse() != null) {
+                    response.setText(notification.getResponse());
+                    sendResponseButton.setVisibility(View.GONE);
+                    response.setEnabled(false);
+                    response.setBackgroundResource(android.R.color.transparent);
+                }
                 responseLayout.setVisibility(View.VISIBLE);
             }
         }
@@ -101,6 +134,7 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
         notificationsFiltered = notifications;
         this.context = context;
     }
+
 
     @Override
     public MyViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {

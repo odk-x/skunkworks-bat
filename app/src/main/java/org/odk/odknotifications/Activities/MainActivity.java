@@ -69,6 +69,7 @@ import org.odk.odknotifications.R;
 import org.odk.odknotifications.Services.MyFirebaseMessagingService;
 import org.odk.odknotifications.SubscribeNotificationGroup;
 import org.odk.odknotifications.UnsubscribeNotificationGroups;
+import org.odk.odknotifications.utils.ResponseHandler;
 import org.opendatakit.application.CommonApplication;
 import org.opendatakit.consts.IntentConsts;
 import org.opendatakit.database.service.UserDbInterface;
@@ -87,6 +88,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -159,6 +161,23 @@ public class MainActivity extends AppCompatActivity
         notificationAdapter = new NotificationAdapter(notificationArrayList,this);
         recyclerView.setAdapter(notificationAdapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
+
+        notificationAdapter.setonButtonClickListener(new NotificationAdapter.onButtonClickListener() {
+            @Override
+            public boolean onSendResponseButtonClick(int position, String response) {
+                Notification notification= notificationArrayList.get(position);
+                ResponseHandler responseHandler = new ResponseHandler(getApplicationContext());
+                boolean isDone = responseHandler.saveResponse(notification.getId(),response, new Date().getTime());
+                if (isDone) {
+                    Toast.makeText(getApplicationContext(),"Message sent successfully",Toast.LENGTH_LONG).show();
+                    return true;
+                }
+               else{
+                    Toast.makeText(getApplicationContext(),"Some error occurred. Please try again later",Toast.LENGTH_LONG).show();
+                    return false;
+                }
+            }
+        });
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(

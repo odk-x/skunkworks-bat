@@ -31,10 +31,12 @@ public class NotificationReplyReceiver extends BroadcastReceiver {
             if (ACTION_REPLY.equals(action)) {
                 String notificationID = intent.getStringExtra(KEY_NOTIFICATION_ID);
                 String message = String.valueOf(getMessage(intent));
-                ResponseHandler responseHandler = new ResponseHandler(context);
-                boolean isDone = responseHandler.saveResponse(notificationID, message,new Date().getTime());
-                if(isDone){
-                    processInlineReply(context, message);
+                if(!message.equals("")) {
+                    ResponseHandler responseHandler = new ResponseHandler(context);
+                    boolean isDone = responseHandler.saveResponse(notificationID, message, new Date().getTime());
+                    if (isDone) {
+                        processInlineReply(context, message);
+                    }
                 }
 
             }
