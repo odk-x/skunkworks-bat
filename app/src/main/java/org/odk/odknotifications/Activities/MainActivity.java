@@ -30,6 +30,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import android.util.Log;
 import android.view.Menu;
@@ -118,6 +119,7 @@ public class MainActivity extends AppCompatActivity
     private String filteredGrp = "None";
     private String sortedOrder;
     private MenuItem syncitem;
+    private SwipeRefreshLayout swipeRefreshLayout;
     private ArrayList<Notification> notificationArrayList;
 
     protected static final String[] STORAGE_PERMISSION = new String[] {
