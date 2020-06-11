@@ -118,6 +118,7 @@ public class MainActivity extends AppCompatActivity
     private String filteredGrp = "None";
     private String sortedOrder;
     private MenuItem syncitem;
+    private ArrayList<Notification> notificationArrayList;
 
     protected static final String[] STORAGE_PERMISSION = new String[] {
             android.Manifest.permission.READ_EXTERNAL_STORAGE
@@ -153,8 +154,8 @@ public class MainActivity extends AppCompatActivity
         }
         this.appName = appName;
 
-        final ArrayList<Notification> notificationArrayList = dbHandler.getAllNotificationsWithResponses();
-        final RecyclerView recyclerView = findViewById(R.id.rv_notifications);
+        notificationArrayList = dbHandler.getAllNotificationsWithResponses();
+        RecyclerView recyclerView = findViewById(R.id.rv_notifications);
         notificationAdapter = new NotificationAdapter(notificationArrayList,this);
         recyclerView.setAdapter(notificationAdapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
