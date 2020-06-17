@@ -28,6 +28,7 @@ public class ServerDatabaseCommunicator {
 
     private static final String USER_TABLE_ID = "UsersTable";
     private static final String GROUPS_TABLE_ID = "GroupsTable";
+    private static final  String NOTIFICATIONS_TABLE_ID = "NotificationsTable";
 
     private static final List<String> USERS_TABLE_COLUMNS_LIST = Arrays.asList("UserId",
             "UserName","GroupList");
@@ -66,13 +67,41 @@ public class ServerDatabaseCommunicator {
         return groupArrayList;
     }
 
-    public ArrayList<Notification> getNotifications(String groupId){
+    public ArrayList<Notification> getNotifications(String groupId) throws ServicesAvailabilityException {
         ArrayList<Notification> notificationArrayList = new ArrayList<>();
 
+        ArrayList<Notification> completeNotificationArrayList = getNotifications();
+
+        for(int i=0;i<completeNotificationArrayList.size();i++){
+
+            if(completeNotificationArrayList.get(i).getId().equals(groupId)){
+                notificationArrayList.add(completeNotificationArrayList.get(i));
+            }
+        }
         return  notificationArrayList;
     }
-    public ArrayList<Notification> getNotifications(){
+
+    public ArrayList<Notification> getNotifications() throws ServicesAvailabilityException {
         ArrayList<Notification> notificationArrayList = new ArrayList<>();
+
+        OrderedColumns orderedColumns = userDbInterface.getUserDefinedColumns(appName,dbHandle,NOTIFICATIONS_TABLE_ID);
+
+        UserTable userTable = userDbInterface.simpleQuery(appName, dbHandle, NOTIFICATIONS_TABLE_ID, orderedColumns, null, null,
+                null,null,null,null,null,null);
+
+        for(int i=0; i<userTable.getNumberOfRows(); i++){
+
+            TypedRow typedRow = userTable.getRowAtIndex(i);
+
+            Notification notification = new Notification();
+            notification.setId(typedRow.getStringValueByKey("NotificationId"));
+            notification.setGroup(typedRow.getStringValueByKey("GroupId"));
+            notification.setTitle(typedRow.getStringValueByKey("NotificationTitle"));
+            notification.setMessage(typedRow.getStringValueByKey("NotificationMessage"));
+            notification.setType(typedRow.getStringValueByKey("NotificationType"));
+            notification.setDate(Long.parseLong(typedRow.getStringValueByKey("NotificationDate")));
+            notificationArrayList.add(notification);
+        }
 
         return  notificationArrayList;
     }
