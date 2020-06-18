@@ -99,7 +99,7 @@ public class ServerDatabaseCommunicator {
             notification.setTitle(typedRow.getStringValueByKey("NotificationTitle"));
             notification.setMessage(typedRow.getStringValueByKey("NotificationMessage"));
             notification.setType(typedRow.getStringValueByKey("NotificationType"));
-            notification.setDate(Long.parseLong(typedRow.getStringValueByKey("NotificationDate")));
+            notification.setDate(Long.parseLong(typedRow.getStringValueByKey("NotificationTime")));
             notificationArrayList.add(notification);
         }
 
@@ -108,6 +108,35 @@ public class ServerDatabaseCommunicator {
 
     public void addResponse(Response response){
 
+    }
+
+    public void addGroup(String groupId, String userId) throws ServicesAvailabilityException, ActionNotAuthorizedException {
+
+        OrderedColumns orderedColumns = userDbInterface.getUserDefinedColumns(appName,dbHandle,USER_TABLE_ID);
+
+
+        UserTable userTable = userDbInterface.simpleQuery(appName, dbHandle, USER_TABLE_ID, orderedColumns, null, null,
+                null,null,null,null,null,null);
+
+        int rowNo = userTable.getRowNumFromId(userId);
+        TypedRow typedRow = userTable.getRowAtIndex(rowNo);
+
+        String groups = typedRow.getStringValueByKey("GroupList");
+        String userName = typedRow.getStringValueByKey("UserName");
+
+        userDbInterface.deleteRowWithId(appName,dbHandle,USER_TABLE_ID,orderedColumns,userId);
+
+        groups += (groupId + ",");
+
+        ContentValues contentValues = new ContentValues();
+
+        List<String>columnValues = Arrays.asList(userId,userName,groups);
+
+        for(int i=0;i<columnValues.size();i++){
+            contentValues.put(USERS_TABLE_COLUMNS_LIST.get(i) , columnValues.get(i));
+        }
+
+        userDbInterface.insertRowWithId(appName,dbHandle,USER_TABLE_ID,orderedColumns,contentValues,userId);
     }
 
     private boolean isUserPresent(String userId) throws ServicesAvailabilityException {
@@ -136,7 +165,7 @@ public class ServerDatabaseCommunicator {
         StringBuilder groups = new StringBuilder();
         for(int i=0; i<temp.length();i++){
             if(temp.getString(i).startsWith("GROUP_")|| temp.getString(i).startsWith("ROLE_")) {
-                groups.append("group:").append(temp.get(i)).append(",");
+                groups.append(temp.get(i)).append(",");
             }
         }
 
