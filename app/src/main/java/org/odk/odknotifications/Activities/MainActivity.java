@@ -28,7 +28,6 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -37,11 +36,6 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.dynamiclinks.FirebaseDynamicLinks;
 import com.google.firebase.dynamiclinks.PendingDynamicLinkData;
 import com.google.zxing.integration.android.IntentIntegrator;
@@ -88,14 +82,15 @@ import java.util.Map;
 
 
 public class MainActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener, DatabaseConnectionListener, SortingOptionListener, FilterNotificationListener, SwipeRefreshLayout.OnRefreshListener {
+        implements NavigationView.OnNavigationItemSelectedListener, DatabaseConnectionListener, SortingOptionListener, FilterNotificationListener{
 
     private static final String SORTED_ORDER = "sorted_order";
     private static final String FILTERED_GRP = "filtered_grp";
-    //private String appName = "org.odk.odknotifications";
+
     public static String appName = ODKFileUtils.getOdkDefaultAppName();
 
     private DatabaseConnectionListener mIOdkDataDatabaseListener;
+
     private TextView name_tv;
     private String loggedInUsername;
     private String TAG = "ODK-X Notify";
@@ -109,9 +104,7 @@ public class MainActivity extends AppCompatActivity
     private String filteredGrp = "None";
     private String sortedOrder;
     private MenuItem syncitem;
-    private SwipeRefreshLayout swipeRefreshLayout;
     private ArrayList<Notification> notificationArrayList;
-    private ServerDatabaseCommunicator serverDatabaseCommunicator;
 
     protected static final String[] STORAGE_PERMISSION = new String[] {
             android.Manifest.permission.READ_EXTERNAL_STORAGE
@@ -180,10 +173,6 @@ public class MainActivity extends AppCompatActivity
                 bottomSheetDialogFragment.show(getSupportFragmentManager(), bottomSheetDialogFragment.getTag());
             }
         });
-        //addMenuItemInNavMenuDrawer();
-        swipeRefreshLayout = findViewById(R.id.swipeRefreshLayout);
-         swipeRefreshLayout.setOnRefreshListener(this);
-
     }
 
     @Override
@@ -289,9 +278,7 @@ public class MainActivity extends AppCompatActivity
         NavigationView navView = (NavigationView) findViewById(R.id.nav_view);
 
         try {
-            if(serverDatabaseCommunicator != null) {
-                groupArrayList = serverDatabaseCommunicator.getGroupsList(getActiveUser());
-            }
+            groupArrayList = ServerDatabaseCommunicator.getGroupsList(getActiveUser());
         } catch (ServicesAvailabilityException e) {
             e.printStackTrace();
         }
@@ -365,7 +352,7 @@ public class MainActivity extends AppCompatActivity
 
     private void syncCloudDatabase() {
         try {
-            groupArrayList = serverDatabaseCommunicator.getGroupsList(getActiveUser());
+            groupArrayList = ServerDatabaseCommunicator.getGroupsList(getActiveUser());
         } catch (ServicesAvailabilityException e) {
             e.printStackTrace();
         }
@@ -426,9 +413,10 @@ public class MainActivity extends AppCompatActivity
         }
         try {
 
-            serverDatabaseCommunicator = new ServerDatabaseCommunicator(getDatabase(),getAppName());
-            groupArrayList = serverDatabaseCommunicator.getGroupsList(getActiveUser());
-            notificationArrayList = serverDatabaseCommunicator.getNotifications();
+            ServerDatabaseCommunicator.init(getDatabase(),getAppName());
+
+            groupArrayList = ServerDatabaseCommunicator.getGroupsList(getActiveUser());
+            notificationArrayList = ServerDatabaseCommunicator.getNotifications();
 
             addMenuItemInNavMenuDrawer();
 
@@ -505,26 +493,23 @@ public class MainActivity extends AppCompatActivity
                             if(deepLink!=null) {
                                 URL url = new URL(deepLink.toString());
                                 Map<String, String> map = splitQuery(url);
-                                String id = map.get("id");
-                                DatabaseReference mRef = FirebaseDatabase.getInstance().getReference();
-                                mRef.child("group").child(id).addListenerForSingleValueEvent(new ValueEventListener() {
-                                    @Override
-                                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                                        Group group = new Group((String)dataSnapshot.child("id").getValue(),(String)dataSnapshot.child("name").getValue(),0);
-                                        new SubscribeNotificationGroup(MainActivity.this,group.getId(),loggedInUsername).execute();
-                                        DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference().child("clients").child(loggedInUsername).child("groups").push();
-                                        databaseReference.child("id").setValue(group.getId());
-                                        databaseReference.child("name").setValue(group.getName());
-                                        dbHandler.addNewGroup(group);
-                                        addMenuItemInNavMenuDrawer();
+                                final String id = map.get("id");
+                                if(id!=null && !id.equals("")) {
+                                    try {
+                                        ServerDatabaseCommunicator.addGroup(id);
+                                    } catch (ServicesAvailabilityException e) {
+                                        e.printStackTrace();
+                                    } catch (ActionNotAuthorizedException e) {
+                                        e.printStackTrace();
                                     }
+                                    addMenuItemInNavMenuDrawer();
+                                    new SubscribeNotificationGroup(MainActivity.this, id, loggedInUsername).execute();
 
-                                    @Override
-                                    public void onCancelled(@NonNull DatabaseError databaseError) {
-
-                                    }
-                                });
-
+                                    Toast.makeText(getApplicationContext(),"Successfully joined the Group",Toast.LENGTH_LONG).show();
+                                }
+                                else {
+                                    Toast.makeText(getApplicationContext(),"Error in Joining group",Toast.LENGTH_LONG).show();
+                                }
                             }
                             else {
                                 Log.d(TAG, "getDynamicLink: no link found");
@@ -663,12 +648,5 @@ public class MainActivity extends AppCompatActivity
     public void sort(String field) {
         notificationAdapter.sort(field);
         sortedOrder = field;
-    }
-
-    @Override
-    public void onRefresh() {
-       notificationArrayList=dbHandler.getAllNotificationsWithResponses();
-       notificationAdapter.notifyDataSetChanged();
-       swipeRefreshLayout.setRefreshing(false);
     }
 }
