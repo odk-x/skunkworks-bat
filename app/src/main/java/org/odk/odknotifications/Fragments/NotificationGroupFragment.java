@@ -1,17 +1,19 @@
 package org.odk.odknotifications.Fragments;
 
 import android.os.Bundle;
-import androidx.fragment.app.Fragment;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
 import org.odk.odknotifications.Adapters.NotificationAdapter;
-import org.odk.odknotifications.DatabaseCommunicator.DBHandler;
+import org.odk.odknotifications.DatabaseCommunicator.ServerDatabaseCommunicator;
 import org.odk.odknotifications.Model.Notification;
 import org.odk.odknotifications.R;
+import org.opendatakit.exception.ServicesAvailabilityException;
 
 import java.util.ArrayList;
 
@@ -43,8 +45,11 @@ public class NotificationGroupFragment extends Fragment {
         }
         notificationArrayList = new ArrayList<>();
         if(groupId!=null) {
-            DBHandler dbHandler = new DBHandler(getContext(), null, null, 1);
-            notificationArrayList = dbHandler.getNotifications(groupId);
+            try {
+                notificationArrayList = ServerDatabaseCommunicator.getNotifications(groupId);
+            } catch (ServicesAvailabilityException e) {
+                e.printStackTrace();
+            }
         }
         notificationAdapter = new NotificationAdapter(notificationArrayList);
         System.out.println("Fragment:"+notificationArrayList.toString());

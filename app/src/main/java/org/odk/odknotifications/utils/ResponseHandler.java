@@ -3,11 +3,11 @@ package org.odk.odknotifications.utils;
 import android.content.Context;
 import android.content.SharedPreferences;
 
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-
 import org.odk.odknotifications.DatabaseCommunicator.DBHandler;
+import org.odk.odknotifications.DatabaseCommunicator.ServerDatabaseCommunicator;
 import org.odk.odknotifications.Model.Response;
+
+import java.util.UUID;
 
 public class ResponseHandler {
     SharedPreferences preferences;
@@ -23,12 +23,12 @@ public class ResponseHandler {
         boolean result = false;
         try{
             String username = preferences.getString("username","anonymous");
+            String responseId = UUID.randomUUID().toString();
             Response response = new Response(message,username,time);
-            DatabaseReference responesRef = FirebaseDatabase.getInstance().getReference("/responses/"+notificationID).push();
-            String responseID = responesRef.getKey();
-            responesRef.setValue(response);
-            response.setResponseID(responseID);
+            response.setResponseID(responseId);
+            response.setNotificationId(notificationID);
             dbHandler.addResponse(response,notificationID);
+            ServerDatabaseCommunicator.addResponse(response);
             result = true;
         }catch (Exception e){
             e.printStackTrace();
