@@ -4,7 +4,12 @@ public class Response {
     private String responseID;
     private String response;
     private String senderID;
+    private String notificationId;
     private long time;
+
+    public Response(){
+
+    }
 
     public Response(String response, String senderID, long time) {
         this.response = response;
@@ -42,5 +47,13 @@ public class Response {
 
     public void setResponse(String response) {
         this.response = response;
+    }
+
+    public void setNotificationId(String notificationId){
+        this.notificationId = notificationId;
+    }
+
+    public String getNotificationId(){
+        return this.notificationId;
     }
 }
