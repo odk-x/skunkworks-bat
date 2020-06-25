@@ -10,10 +10,9 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import org.odk.odknotifications.Adapters.NotificationAdapter;
-import org.odk.odknotifications.DatabaseCommunicator.ServerDatabaseCommunicator;
+import org.odk.odknotifications.DatabaseCommunicator.DBHandler;
 import org.odk.odknotifications.Model.Notification;
 import org.odk.odknotifications.R;
-import org.opendatakit.exception.ServicesAvailabilityException;
 
 import java.util.ArrayList;
 
@@ -45,11 +44,8 @@ public class NotificationGroupFragment extends Fragment {
         }
         notificationArrayList = new ArrayList<>();
         if(groupId!=null) {
-            try {
-                notificationArrayList = ServerDatabaseCommunicator.getNotifications(groupId);
-            } catch (ServicesAvailabilityException e) {
-                e.printStackTrace();
-            }
+            DBHandler dbHandler = new DBHandler(getContext(), null, null, 1);
+            notificationArrayList = dbHandler.getNotifications(groupId);
         }
         notificationAdapter = new NotificationAdapter(notificationArrayList);
         System.out.println("Fragment:"+notificationArrayList.toString());
