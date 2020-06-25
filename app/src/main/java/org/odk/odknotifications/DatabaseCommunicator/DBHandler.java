@@ -207,7 +207,7 @@ public class DBHandler extends SQLiteOpenHelper {
         db.close();
     }
 
-    void clearTable(String tableName) {
+    public void clearTable(String tableName) {
         SQLiteDatabase db = getWritableDatabase();
         db.delete(tableName, null, null);
         db.close();

@@ -55,6 +55,7 @@ import org.odk.odknotifications.Model.Group;
 import org.odk.odknotifications.Model.Notification;
 import org.odk.odknotifications.R;
 import org.odk.odknotifications.SubscribeNotificationGroup;
+import org.odk.odknotifications.SyncDataWithServices;
 import org.odk.odknotifications.UnsubscribeNotificationGroups;
 import org.odk.odknotifications.utils.ResponseHandler;
 import org.opendatakit.application.CommonApplication;
@@ -251,7 +252,7 @@ public class MainActivity extends AppCompatActivity
     private void addNotifications(){
 
         RecyclerView recyclerView = findViewById(R.id.rv_notifications);
-
+        notificationArrayList = dbHandler.getAllNotificationsWithResponses();
         notificationAdapter = new NotificationAdapter(notificationArrayList,this);
         recyclerView.setAdapter(notificationAdapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
@@ -351,14 +352,20 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void syncCloudDatabase() {
+
         try {
             groupArrayList = ServerDatabaseCommunicator.getGroupsList(getActiveUser());
+            notificationArrayList = ServerDatabaseCommunicator.getNotifications();
+            new SyncDataWithServices(this,notificationArrayList,dbHandler).execute();
         } catch (ServicesAvailabilityException e) {
             e.printStackTrace();
         }
+
         new UnsubscribeNotificationGroups(this).execute();
         joinODKGroups(groupArrayList);
+
         addMenuItemInNavMenuDrawer();
+        addNotifications();
     }
 
     @SuppressWarnings("StatementWithEmptyBody")
