@@ -47,7 +47,7 @@ public class NotificationGroupFragment extends Fragment {
             DBHandler dbHandler = new DBHandler(getContext(), null, null, 1);
             notificationArrayList = dbHandler.getNotifications(groupId);
         }
-        notificationAdapter = new NotificationAdapter(notificationArrayList);
+        notificationAdapter = new NotificationAdapter(notificationArrayList,getContext());
         System.out.println("Fragment:"+notificationArrayList.toString());
     }
 

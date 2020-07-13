@@ -183,7 +183,11 @@ public class ServerDatabaseCommunicator {
 
         String roles_array_string = userDbInterface.getRolesList(appName);
 
-        JSONArray temp = new JSONArray(roles_array_string);
+        JSONArray temp = new JSONArray();
+
+        if(roles_array_string!=null) {
+            temp = new JSONArray(roles_array_string);
+        }
 
         StringBuilder groups = new StringBuilder();
         for(int i=0; i<temp.length();i++){
