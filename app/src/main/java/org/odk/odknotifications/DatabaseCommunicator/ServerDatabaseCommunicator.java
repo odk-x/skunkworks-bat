@@ -1,7 +1,6 @@
 package org.odk.odknotifications.DatabaseCommunicator;
 
 import android.content.ContentValues;
-import android.util.Log;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -32,11 +31,35 @@ public class ServerDatabaseCommunicator {
     private static final  String NOTIFICATIONS_TABLE_ID = "NotificationsTable";
     private static final String RESPONSES_TABLE_ID = "ResponsesTable";
 
-    private static final List<String> USERS_TABLE_COLUMNS_LIST = Arrays.asList("UserId",
-            "UserName","GroupList");
+    private static final String USER_ID = "UserId";
+    private static final String USER_NAME = "UserName";
 
-    private static final List<String> RESPONSES_TABLE_COLUMNS_LIST = Arrays.asList("ResponseId",
-            "ResponseText","NotificationId","UserName","ResponseTime");
+    private static final String GROUP_LIST = "GroupList";
+    private static final String GROUP_NAME = "GroupName";
+    private static final String GROUP_ID = "GroupId";
+
+    private static final String RESPONSE_ID = "ResponseId";
+    private static final String RESPONSE_TEXT = "ResponseText";
+    private static final String RESPONSE_TIME = "ResponseTime";
+
+
+    private static final String NOTIFICATION_ID = "NotificationId";
+    private static final String NOTIFICATION_TITLE = "NotificationTitle";
+    private static final String NOTIFICATION_MESSAGE = "NotificationMessage";
+    private static final String NOTIFICATION_TYPE = "NotificationType";
+    private static final String NOTIFICATION_TIME = "NotificationTime";
+
+    private static final String ANONYMOUS_USER_NAME = "anonymous";
+    private static final String USERNAME_PREFIX = "username:";
+
+    private static final String SPLIT_REGEX_STRING = ",";
+
+
+    private static final List<String> USERS_TABLE_COLUMNS_LIST = Arrays.asList(USER_ID,
+            USER_NAME, GROUP_LIST);
+
+    private static final List<String> RESPONSES_TABLE_COLUMNS_LIST = Arrays.asList(RESPONSE_ID,
+            RESPONSE_TEXT, NOTIFICATION_ID, USER_NAME, RESPONSE_TIME);
 
     private static ServerDatabaseCommunicator serverDatabaseCommunicator;
 
@@ -76,8 +99,8 @@ public class ServerDatabaseCommunicator {
 
         TypedRow typedRow = userTable.getRowAtIndex(rowNo);
 
-        String groupIds = typedRow.getStringValueByKey("GroupList");
-        String[] groupList = groupIds.split(",");
+        String groupIds = typedRow.getStringValueByKey(GROUP_LIST);
+        String[] groupList = groupIds.split(SPLIT_REGEX_STRING);
 
         for (String s : groupList) {
             Group group = getGroupFromId(s);
@@ -98,7 +121,7 @@ public class ServerDatabaseCommunicator {
                 notificationArrayList.add(notification);
             }
         }
-        Log.e("size",notificationArrayList.size()+"");
+
         return  notificationArrayList;
     }
 
@@ -117,12 +140,12 @@ public class ServerDatabaseCommunicator {
 
             Notification notification = new Notification();
 
-            notification.setId(typedRow.getStringValueByKey("NotificationId"));
-            notification.setGroup(typedRow.getStringValueByKey("GroupId"));
-            notification.setTitle(typedRow.getStringValueByKey("NotificationTitle"));
-            notification.setMessage(typedRow.getStringValueByKey("NotificationMessage"));
-            notification.setType(typedRow.getStringValueByKey("NotificationType"));
-            notification.setDate(Long.parseLong(typedRow.getStringValueByKey("NotificationTime")));
+            notification.setId(typedRow.getStringValueByKey(NOTIFICATION_ID));
+            notification.setGroup(typedRow.getStringValueByKey(GROUP_ID));
+            notification.setTitle(typedRow.getStringValueByKey(NOTIFICATION_TITLE));
+            notification.setMessage(typedRow.getStringValueByKey(NOTIFICATION_MESSAGE));
+            notification.setType(typedRow.getStringValueByKey(NOTIFICATION_TYPE));
+            notification.setDate(Long.parseLong(typedRow.getStringValueByKey(NOTIFICATION_TIME)));
             if(!getResponse(notification.getId()).equals(""))notification.setResponse(getResponse(notification.getId()));
 
             notificationArrayList.add(notification);
@@ -159,10 +182,10 @@ public class ServerDatabaseCommunicator {
         int rowNo = userTable.getRowNumFromId(userId);
         TypedRow typedRow = userTable.getRowAtIndex(rowNo);
 
-        String groups = typedRow.getStringValueByKey("GroupList");
-        String userName = typedRow.getStringValueByKey("UserName");
+        String groups = typedRow.getStringValueByKey(GROUP_LIST);
+        String userName = typedRow.getStringValueByKey(USER_NAME);
 
-        List<String> groupsArray = Arrays.asList(groups.split(","));
+        List<String> groupsArray = Arrays.asList(groups.split(SPLIT_REGEX_STRING));
 
         if(!groupsArray.contains(groupId)){
             groups += (groupId + ",");
@@ -189,7 +212,7 @@ public class ServerDatabaseCommunicator {
         boolean isUserPresent = false;
 
         for(int i=0; i<userTable.getNumberOfRows(); i++){
-            if(userTable.getRowAtIndex(i).getStringValueByKey("UserId").equals(userId)){
+            if (userTable.getRowAtIndex(i).getStringValueByKey(USER_ID).equals(userId)) {
                 isUserPresent = true;
             }
         }
@@ -240,8 +263,8 @@ public class ServerDatabaseCommunicator {
 
         if(rowNo >= 0) {
             TypedRow typedRow = userTable.getRowAtIndex(rowNo);
-            group.setId(typedRow.getStringValueByKey("GroupId"));
-            group.setName(typedRow.getStringValueByKey("GroupName"));
+            group.setId(typedRow.getStringValueByKey(GROUP_ID));
+            group.setName(typedRow.getStringValueByKey(GROUP_NAME));
         }
         return group;
     }
@@ -258,9 +281,9 @@ public class ServerDatabaseCommunicator {
         for(int i=0;i<userTable.getNumberOfRows();i++){
             TypedRow typedRow = userTable.getRowAtIndex(i);
 
-            if(typedRow.getStringValueByKey("NotificationId").equals(notificationId) &&
-                    typedRow.getStringValueByKey("UserName").equals(getUserName(userId))){
-                response = typedRow.getStringValueByKey("ResponseText");
+            if (typedRow.getStringValueByKey(NOTIFICATION_ID).equals(notificationId) &&
+                    typedRow.getStringValueByKey(USER_NAME).equals(getUserName(userId))) {
+                response = typedRow.getStringValueByKey(RESPONSE_TEXT);
             }
         }
 
@@ -270,7 +293,7 @@ public class ServerDatabaseCommunicator {
     private String getUserName(String userId) {
         String userName = userId;
 
-        if(!(userId.compareTo("anonymous")==0) && userId.length()>8 && userId.substring(0,9).compareTo("username:")==0){
+        if (!(userId.compareTo(ANONYMOUS_USER_NAME) == 0) && userId.length() > 8 && userId.substring(0, 9).compareTo(USERNAME_PREFIX) == 0) {
             userName = userName.substring(9);
         }
         return userName;
