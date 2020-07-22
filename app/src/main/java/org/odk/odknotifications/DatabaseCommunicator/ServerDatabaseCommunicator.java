@@ -293,8 +293,8 @@ public class ServerDatabaseCommunicator {
     private String getUserName(String userId) {
         String userName = userId;
 
-        if (!(userId.compareTo(ANONYMOUS_USER_NAME) == 0) && userId.length() > 8 && userId.substring(0, 9).compareTo(USERNAME_PREFIX) == 0) {
-            userName = userName.substring(9);
+        if (!(userId.equals(ANONYMOUS_USER_NAME)) && userId.length() > 8 && userId.substring(0, 9).equals(USERNAME_PREFIX)) {
+            userName = userName.substring(9);  //To remove prefix from the UserID
         }
         return userName;
     }

@@ -107,6 +107,9 @@ public class MainActivity extends AppCompatActivity
     private MenuItem syncitem;
     private ArrayList<Notification> notificationArrayList;
 
+    private static final String ANONYMOUS_USER_NAME = "anonymous";
+    private static final String USERNAME_PREFIX = "username:";
+
     protected static final String[] STORAGE_PERMISSION = new String[] {
             android.Manifest.permission.READ_EXTERNAL_STORAGE
     };
@@ -310,8 +313,8 @@ public class MainActivity extends AppCompatActivity
         loggedInUsername = getActiveUser();
         Log.d("Success", "Database available " + loggedInUsername);
         if(loggedInUsername!=null){
-            if(!(loggedInUsername.compareTo("anonymous")==0)&& loggedInUsername.length()>8 && loggedInUsername.substring(0,9).compareTo("username:")==0){
-                loggedInUsername = loggedInUsername.substring(9);
+            if (!(loggedInUsername.equals(ANONYMOUS_USER_NAME)) && loggedInUsername.length() > 8 && loggedInUsername.substring(0, 9).equals(USERNAME_PREFIX)) {
+                loggedInUsername = loggedInUsername.substring(9);   //To remove prefix from the UserID
             }
             name_tv.setText(loggedInUsername);
             SharedPreferences preferences = getSharedPreferences(getPackageName(),MODE_PRIVATE);
