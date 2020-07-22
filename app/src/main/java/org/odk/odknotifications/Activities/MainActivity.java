@@ -174,6 +174,8 @@ public class MainActivity extends AppCompatActivity
                 bottomSheetDialogFragment.show(getSupportFragmentManager(), bottomSheetDialogFragment.getTag());
             }
         });
+
+        addNotifications();
     }
 
     @Override
@@ -253,26 +255,37 @@ public class MainActivity extends AppCompatActivity
 
         RecyclerView recyclerView = findViewById(R.id.rv_notifications);
         notificationArrayList = dbHandler.getAllNotificationsWithResponses();
-        notificationAdapter = new NotificationAdapter(notificationArrayList,this);
-        recyclerView.setAdapter(notificationAdapter);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        TextView textView = findViewById(R.id.no_data_text_view);
 
-        notificationAdapter.setonButtonClickListener(new NotificationAdapter.onButtonClickListener() {
-            @Override
-            public boolean onSendResponseButtonClick(int position, String response) {
-                Notification notification= notificationArrayList.get(position);
-                ResponseHandler responseHandler = new ResponseHandler(getApplicationContext());
-                boolean isDone = responseHandler.saveResponse(notification.getId(),response, new Date().getTime());
-                if (isDone) {
-                    Toast.makeText(getApplicationContext(),"Message sent successfully",Toast.LENGTH_LONG).show();
-                    return true;
+        if(notificationArrayList == null || notificationArrayList.size()==0) {
+            textView.setText(R.string.No_data);
+            textView.setVisibility(View.VISIBLE);
+        }
+
+        else {
+
+            textView.setVisibility(View.GONE);
+
+            notificationAdapter = new NotificationAdapter(notificationArrayList, this);
+            recyclerView.setAdapter(notificationAdapter);
+            recyclerView.setLayoutManager(new LinearLayoutManager(this));
+
+            notificationAdapter.setonButtonClickListener(new NotificationAdapter.onButtonClickListener() {
+                @Override
+                public boolean onSendResponseButtonClick(int position, String response) {
+                    Notification notification = notificationArrayList.get(position);
+                    ResponseHandler responseHandler = new ResponseHandler(getApplicationContext());
+                    boolean isDone = responseHandler.saveResponse(notification.getId(), response, new Date().getTime());
+                    if (isDone) {
+                        Toast.makeText(getApplicationContext(), "Message sent successfully", Toast.LENGTH_LONG).show();
+                        return true;
+                    } else {
+                        Toast.makeText(getApplicationContext(), "Some error occurred. Please try again later", Toast.LENGTH_LONG).show();
+                        return false;
+                    }
                 }
-                else{
-                    Toast.makeText(getApplicationContext(),"Some error occurred. Please try again later",Toast.LENGTH_LONG).show();
-                    return false;
-                }
-            }
-        });
+            });
+        }
     }
 
     private void addMenuItemInNavMenuDrawer() {
@@ -295,7 +308,7 @@ public class MainActivity extends AppCompatActivity
     private void setUserName(){
 
         loggedInUsername = getActiveUser();
-        Log.e("Success", "Database available " + loggedInUsername);
+        Log.d("Success", "Database available " + loggedInUsername);
         if(loggedInUsername!=null){
             if(!(loggedInUsername.compareTo("anonymous")==0)&& loggedInUsername.length()>8 && loggedInUsername.substring(0,9).compareTo("username:")==0){
                 loggedInUsername = loggedInUsername.substring(9);
@@ -365,7 +378,8 @@ public class MainActivity extends AppCompatActivity
         joinODKGroups(groupArrayList);
 
         addMenuItemInNavMenuDrawer();
-        addNotifications();
+
+        notificationAdapter.notifyDataSetChanged();
     }
 
     @SuppressWarnings("StatementWithEmptyBody")
@@ -423,18 +437,8 @@ public class MainActivity extends AppCompatActivity
             ServerDatabaseCommunicator.init(getDatabase(),getAppName());
 
             groupArrayList = ServerDatabaseCommunicator.getGroupsList(getActiveUser());
-            notificationArrayList = ServerDatabaseCommunicator.getNotifications();
 
             addMenuItemInNavMenuDrawer();
-
-            if(notificationArrayList == null || notificationArrayList.size()==0) {
-                TextView textView = findViewById(R.id.no_data_text_view);
-                textView.setText(R.string.No_data);
-                textView.setVisibility(View.VISIBLE);
-            }
-            else{
-                addNotifications();
-            }
 
         } catch (ServicesAvailabilityException e) {
             e.printStackTrace();
