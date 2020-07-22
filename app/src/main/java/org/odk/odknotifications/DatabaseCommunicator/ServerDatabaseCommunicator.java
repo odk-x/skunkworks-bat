@@ -92,10 +92,10 @@ public class ServerDatabaseCommunicator {
 
         ArrayList<Notification> completeNotificationArrayList = getNotifications();
 
-        for(int i=0;i<completeNotificationArrayList.size();i++){
+        for (Notification notification : completeNotificationArrayList) {
 
-            if(completeNotificationArrayList.get(i).getGroup().equals(groupId)){
-                notificationArrayList.add(completeNotificationArrayList.get(i));
+            if (notification.getGroup().equals(groupId)) {
+                notificationArrayList.add(notification);
             }
         }
         Log.e("size",notificationArrayList.size()+"");
