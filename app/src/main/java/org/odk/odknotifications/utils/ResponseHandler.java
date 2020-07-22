@@ -28,7 +28,7 @@ public class ResponseHandler {
             response.setResponseID(responseId);
             response.setNotificationId(notificationID);
             dbHandler.addResponse(response,notificationID);
-            ServerDatabaseCommunicator.addResponse(response);
+            ServerDatabaseCommunicator.getInstance().addResponse(response);
             result = true;
         }catch (Exception e){
             e.printStackTrace();

@@ -38,7 +38,22 @@ public class ServerDatabaseCommunicator {
     private static final List<String> RESPONSES_TABLE_COLUMNS_LIST = Arrays.asList("ResponseId",
             "ResponseText","NotificationId","UserName","ResponseTime");
 
-    public static void init(UserDbInterface userDb , String aName) throws ServicesAvailabilityException, JSONException, ActionNotAuthorizedException {
+    private static ServerDatabaseCommunicator serverDatabaseCommunicator;
+
+    private ServerDatabaseCommunicator() {
+
+    }
+
+    public static synchronized ServerDatabaseCommunicator getInstance() {
+
+        if (serverDatabaseCommunicator == null) {
+            serverDatabaseCommunicator = new ServerDatabaseCommunicator();
+        }
+
+        return serverDatabaseCommunicator;
+    }
+
+    public void init(UserDbInterface userDb, String aName) throws ServicesAvailabilityException, JSONException, ActionNotAuthorizedException {
 
         userDbInterface = userDb;
         appName = aName;
@@ -48,7 +63,7 @@ public class ServerDatabaseCommunicator {
         if(!isUserPresent(userId))addUser(userId);
     }
 
-    public static ArrayList<Group> getGroupsList(String activeUser) throws ServicesAvailabilityException {
+    public ArrayList<Group> getGroupsList(String activeUser) throws ServicesAvailabilityException {
 
         ArrayList<Group> groupArrayList = new ArrayList<>();
 
@@ -71,7 +86,8 @@ public class ServerDatabaseCommunicator {
         return groupArrayList;
     }
 
-    public static ArrayList<Notification> getNotifications(String groupId) throws ServicesAvailabilityException {
+    public ArrayList<Notification> getNotifications(String groupId) throws ServicesAvailabilityException {
+
         ArrayList<Notification> notificationArrayList = new ArrayList<>();
 
         ArrayList<Notification> completeNotificationArrayList = getNotifications();
@@ -86,7 +102,8 @@ public class ServerDatabaseCommunicator {
         return  notificationArrayList;
     }
 
-    public static ArrayList<Notification> getNotifications() throws ServicesAvailabilityException {
+    public ArrayList<Notification> getNotifications() throws ServicesAvailabilityException {
+
         ArrayList<Notification> notificationArrayList = new ArrayList<>();
 
         OrderedColumns orderedColumns = userDbInterface.getUserDefinedColumns(appName,dbHandle,NOTIFICATIONS_TABLE_ID);
@@ -114,7 +131,7 @@ public class ServerDatabaseCommunicator {
         return  notificationArrayList;
     }
 
-    public static void addResponse(Response response) throws ServicesAvailabilityException, ActionNotAuthorizedException {
+    public void addResponse(Response response) throws ServicesAvailabilityException, ActionNotAuthorizedException {
 
         OrderedColumns orderedColumns = userDbInterface.getUserDefinedColumns(appName,dbHandle,RESPONSES_TABLE_ID);
 
@@ -131,7 +148,7 @@ public class ServerDatabaseCommunicator {
 
     }
 
-    public static void addGroup(String groupId) throws ServicesAvailabilityException, ActionNotAuthorizedException {
+    public void addGroup(String groupId) throws ServicesAvailabilityException, ActionNotAuthorizedException {
 
         OrderedColumns orderedColumns = userDbInterface.getUserDefinedColumns(appName,dbHandle,USER_TABLE_ID);
 
@@ -162,7 +179,7 @@ public class ServerDatabaseCommunicator {
         userDbInterface.updateRowWithId(appName,dbHandle,USER_TABLE_ID,orderedColumns,contentValues,userId);
     }
 
-    private static boolean isUserPresent(String userId) throws ServicesAvailabilityException {
+    private boolean isUserPresent(String userId) throws ServicesAvailabilityException {
 
         OrderedColumns orderedColumns = userDbInterface.getUserDefinedColumns(appName,dbHandle,USER_TABLE_ID);
 
@@ -179,7 +196,7 @@ public class ServerDatabaseCommunicator {
         return isUserPresent;
     }
 
-    private static void addUser (String userId) throws ServicesAvailabilityException, JSONException, ActionNotAuthorizedException {
+    private void addUser(String userId) throws ServicesAvailabilityException, JSONException, ActionNotAuthorizedException {
 
         String roles_array_string = userDbInterface.getRolesList(appName);
 
@@ -211,7 +228,7 @@ public class ServerDatabaseCommunicator {
         userDbInterface.insertRowWithId(appName,dbHandle,USER_TABLE_ID,orderedColumns,contentValues,userId);
     }
 
-    private static Group getGroupFromId(String groupId) throws ServicesAvailabilityException {
+    private Group getGroupFromId(String groupId) throws ServicesAvailabilityException {
         Group group = new Group();
 
         OrderedColumns orderedColumns = userDbInterface.getUserDefinedColumns(appName,dbHandle,GROUPS_TABLE_ID);
@@ -229,7 +246,7 @@ public class ServerDatabaseCommunicator {
         return group;
     }
 
-    private static String getResponse(String notificationId) throws ServicesAvailabilityException {
+    private String getResponse(String notificationId) throws ServicesAvailabilityException {
 
         String response = "";
 
@@ -250,7 +267,7 @@ public class ServerDatabaseCommunicator {
         return response;
     }
 
-    private static String getUserName (String userId){
+    private String getUserName(String userId) {
         String userName = userId;
 
         if(!(userId.compareTo("anonymous")==0) && userId.length()>8 && userId.substring(0,9).compareTo("username:")==0){

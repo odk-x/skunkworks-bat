@@ -292,7 +292,7 @@ public class MainActivity extends AppCompatActivity
         NavigationView navView = (NavigationView) findViewById(R.id.nav_view);
 
         try {
-            groupArrayList = ServerDatabaseCommunicator.getGroupsList(getActiveUser());
+            groupArrayList = ServerDatabaseCommunicator.getInstance().getGroupsList(getActiveUser());
         } catch (ServicesAvailabilityException e) {
             e.printStackTrace();
         }
@@ -367,8 +367,8 @@ public class MainActivity extends AppCompatActivity
     private void syncCloudDatabase() {
 
         try {
-            groupArrayList = ServerDatabaseCommunicator.getGroupsList(getActiveUser());
-            notificationArrayList = ServerDatabaseCommunicator.getNotifications();
+            groupArrayList = ServerDatabaseCommunicator.getInstance().getGroupsList(getActiveUser());
+            notificationArrayList = ServerDatabaseCommunicator.getInstance().getNotifications();
             new SyncDataWithServices(this,notificationArrayList,dbHandler).execute();
         } catch (ServicesAvailabilityException e) {
             e.printStackTrace();
@@ -434,9 +434,9 @@ public class MainActivity extends AppCompatActivity
         }
         try {
 
-            ServerDatabaseCommunicator.init(getDatabase(),getAppName());
+            ServerDatabaseCommunicator.getInstance().init(getDatabase(), getAppName());
 
-            groupArrayList = ServerDatabaseCommunicator.getGroupsList(getActiveUser());
+            groupArrayList = ServerDatabaseCommunicator.getInstance().getGroupsList(getActiveUser());
 
             addMenuItemInNavMenuDrawer();
 
@@ -507,7 +507,7 @@ public class MainActivity extends AppCompatActivity
                                 final String id = map.get("id");
                                 if(id!=null && !id.equals("")) {
                                     try {
-                                        ServerDatabaseCommunicator.addGroup(id);
+                                        ServerDatabaseCommunicator.getInstance().addGroup(id);
                                     } catch (ServicesAvailabilityException e) {
                                         e.printStackTrace();
                                     } catch (ActionNotAuthorizedException e) {
