@@ -1,52 +1,39 @@
 package org.odk.odknotifications;
 
-import android.app.ProgressDialog;
-import android.os.AsyncTask;
-
-import org.odk.odknotifications.Activities.MainActivity;
 import org.odk.odknotifications.DatabaseCommunicator.DBHandler;
 import org.odk.odknotifications.Model.Notification;
 
 import java.util.ArrayList;
+import java.util.concurrent.Executor;
 
-public class SyncDataWithServices extends AsyncTask<Void,Void,Void> {
+public class SyncDataWithServices {
 
-    private ProgressDialog progressDialog;
     private ArrayList<Notification>notificationArrayList;
     private DBHandler dbHandler;
 
-    public SyncDataWithServices(MainActivity activity , ArrayList<Notification>notificationArrayList , DBHandler dbHandler){
-        this.progressDialog = new ProgressDialog(activity);
+    public SyncDataWithServices(ArrayList<Notification> notificationArrayList, DBHandler dbHandler) {
+
         this.notificationArrayList = notificationArrayList;
         this.dbHandler = dbHandler;
     }
 
-    @Override
-    protected void onPreExecute() {
-        progressDialog.setMessage("Syncing data with services app, please wait...");
-        try{
-            progressDialog.show();
-        }catch (Exception e){
-        }
-    }
+    public void syncData() {
 
-    @Override
-    protected Void doInBackground(Void... voids) {
+        new Executor() {
+            @Override
+            public void execute(Runnable command) {
+                command.run();
+            }
+        }.execute(new Runnable() {
+            @Override
+            public void run() {
 
-        dbHandler.clearTable(DBHandler.TABLE_NOTIFICATIONS);
+                dbHandler.clearTable(DBHandler.TABLE_NOTIFICATIONS);
 
-        for(Notification notification : notificationArrayList){
-            dbHandler.addNotification(notification);
-        }
-
-        return null;
-    }
-
-    @Override
-    protected void onPostExecute(Void aVoid) {
-        super.onPostExecute(aVoid);
-        if (progressDialog.isShowing()) {
-            progressDialog.dismiss();
-        }
+                for (Notification notification : notificationArrayList) {
+                    dbHandler.addNotification(notification);
+                }
+            }
+        });
     }
 }

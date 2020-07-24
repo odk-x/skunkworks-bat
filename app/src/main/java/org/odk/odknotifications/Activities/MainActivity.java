@@ -372,7 +372,7 @@ public class MainActivity extends AppCompatActivity
         try {
             groupArrayList = ServerDatabaseCommunicator.getInstance().getGroupsList(getActiveUser());
             notificationArrayList = ServerDatabaseCommunicator.getInstance().getNotifications();
-            new SyncDataWithServices(this,notificationArrayList,dbHandler).execute();
+            new SyncDataWithServices(notificationArrayList, dbHandler).syncData();
         } catch (ServicesAvailabilityException e) {
             e.printStackTrace();
         }
