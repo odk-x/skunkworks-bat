@@ -5,6 +5,10 @@ public class Group {
     private String id;
     private int snoozeNotifications;
 
+    public Group(){
+
+    }
+
     public Group(String id,String name, int snoozeNotifications) {
         this.id = id;
         this.name = name;

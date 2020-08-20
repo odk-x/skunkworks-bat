@@ -9,10 +9,10 @@ import android.graphics.BitmapFactory;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Build;
+import android.util.Log;
+
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.RemoteInput;
-
-import android.util.Log;
 
 import com.firebase.jobdispatcher.FirebaseJobDispatcher;
 import com.firebase.jobdispatcher.GooglePlayDriver;
@@ -68,7 +68,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
             Map<String,String> receivedData = remoteMessage.getData();
             if(receivedData.containsKey("img")&&receivedData.get("img")!=null) {
                 Random random = new Random();
-                File img_file = new File(getApplicationContext().getFilesDir(), random.nextInt(100000) +".png");
+                File img_file = new File(getApplicationContext().getFilesDir(), receivedData.get("id") +".png");
                 BufferedInputStream inputStream;
                 FileOutputStream fileOutputStream ;
                 try {
