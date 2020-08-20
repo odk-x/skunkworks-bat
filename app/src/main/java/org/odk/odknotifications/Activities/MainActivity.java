@@ -258,6 +258,7 @@ public class MainActivity extends AppCompatActivity
 
         RecyclerView recyclerView = findViewById(R.id.rv_notifications);
         notificationArrayList = dbHandler.getAllNotificationsWithResponses();
+        notificationAdapter = new NotificationAdapter(notificationArrayList, this);
         TextView textView = findViewById(R.id.no_data_text_view);
 
         if(notificationArrayList == null || notificationArrayList.size()==0) {
@@ -269,7 +270,6 @@ public class MainActivity extends AppCompatActivity
 
             textView.setVisibility(View.GONE);
 
-            notificationAdapter = new NotificationAdapter(notificationArrayList, this);
             recyclerView.setAdapter(notificationAdapter);
             recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
