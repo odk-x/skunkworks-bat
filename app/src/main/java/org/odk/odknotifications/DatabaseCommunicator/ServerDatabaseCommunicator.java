@@ -76,7 +76,7 @@ public class ServerDatabaseCommunicator {
         return serverDatabaseCommunicator;
     }
 
-    public void init(UserDbInterface userDb, String aName) throws ServicesAvailabilityException, JSONException, ActionNotAuthorizedException {
+    public synchronized void init(UserDbInterface userDb, String aName) throws ServicesAvailabilityException, JSONException, ActionNotAuthorizedException {
 
         userDbInterface = userDb;
         appName = aName;
@@ -86,7 +86,7 @@ public class ServerDatabaseCommunicator {
         if(!isUserPresent(userId))addUser(userId);
     }
 
-    public ArrayList<Group> getGroupsList(String activeUser) throws ServicesAvailabilityException {
+    public synchronized ArrayList<Group> getGroupsList(String activeUser) throws ServicesAvailabilityException {
 
         ArrayList<Group> groupArrayList = new ArrayList<>();
 
@@ -109,7 +109,7 @@ public class ServerDatabaseCommunicator {
         return groupArrayList;
     }
 
-    public ArrayList<Notification> getNotifications(String groupId) throws ServicesAvailabilityException {
+    public synchronized ArrayList<Notification> getNotifications(String groupId) throws ServicesAvailabilityException {
 
         ArrayList<Notification> notificationArrayList = new ArrayList<>();
 
@@ -125,7 +125,7 @@ public class ServerDatabaseCommunicator {
         return  notificationArrayList;
     }
 
-    public ArrayList<Notification> getNotifications() throws ServicesAvailabilityException {
+    public synchronized ArrayList<Notification> getNotifications() throws ServicesAvailabilityException {
 
         ArrayList<Notification> notificationArrayList = new ArrayList<>();
 
@@ -154,7 +154,7 @@ public class ServerDatabaseCommunicator {
         return  notificationArrayList;
     }
 
-    public void addResponse(Response response) throws ServicesAvailabilityException, ActionNotAuthorizedException {
+    public synchronized void addResponse(Response response) throws ServicesAvailabilityException, ActionNotAuthorizedException {
 
         OrderedColumns orderedColumns = userDbInterface.getUserDefinedColumns(appName,dbHandle,RESPONSES_TABLE_ID);
 
@@ -171,7 +171,7 @@ public class ServerDatabaseCommunicator {
 
     }
 
-    public void addGroup(String groupId) throws ServicesAvailabilityException, ActionNotAuthorizedException {
+    public synchronized void addGroup(String groupId) throws ServicesAvailabilityException, ActionNotAuthorizedException {
 
         OrderedColumns orderedColumns = userDbInterface.getUserDefinedColumns(appName,dbHandle,USER_TABLE_ID);
 
