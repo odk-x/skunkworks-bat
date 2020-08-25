@@ -107,6 +107,9 @@ public class MainActivity extends AppCompatActivity
     private MenuItem syncitem;
     private ArrayList<Notification> notificationArrayList;
 
+    RecyclerView recyclerView;
+    TextView noDataTextView;
+
     private static final String ANONYMOUS_USER_NAME = "anonymous";
     private static final String USERNAME_PREFIX = "username:";
 
@@ -156,6 +159,9 @@ public class MainActivity extends AppCompatActivity
         navigationView.setNavigationItemSelectedListener(this);
         View headerView = navigationView.getHeaderView(0);
         name_tv = (TextView) headerView.findViewById(R.id.name_tv);
+
+        recyclerView = findViewById(R.id.rv_notifications);
+        noDataTextView = findViewById(R.id.no_data_text_view);
 
         findViewById(R.id.sort_button).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -256,38 +262,37 @@ public class MainActivity extends AppCompatActivity
 
     private void addNotifications(){
 
-        RecyclerView recyclerView = findViewById(R.id.rv_notifications);
         notificationArrayList = dbHandler.getAllNotificationsWithResponses();
         notificationAdapter = new NotificationAdapter(notificationArrayList, this);
-        TextView textView = findViewById(R.id.no_data_text_view);
 
-        if(notificationArrayList == null || notificationArrayList.size()==0) {
-            textView.setText(R.string.No_data);
-            textView.setVisibility(View.VISIBLE);
-        }
+        recyclerView.setAdapter(notificationAdapter);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
-        else {
-
-            textView.setVisibility(View.GONE);
-
-            recyclerView.setAdapter(notificationAdapter);
-            recyclerView.setLayoutManager(new LinearLayoutManager(this));
-
-            notificationAdapter.setonButtonClickListener(new NotificationAdapter.onButtonClickListener() {
-                @Override
-                public boolean onSendResponseButtonClick(int position, String response) {
-                    Notification notification = notificationArrayList.get(position);
-                    ResponseHandler responseHandler = new ResponseHandler(getApplicationContext());
-                    boolean isDone = responseHandler.saveResponse(notification.getId(), response, new Date().getTime());
-                    if (isDone) {
-                        Toast.makeText(getApplicationContext(), "Message sent successfully", Toast.LENGTH_LONG).show();
-                        return true;
-                    } else {
-                        Toast.makeText(getApplicationContext(), "Some error occurred. Please try again later", Toast.LENGTH_LONG).show();
-                        return false;
-                    }
+        notificationAdapter.setonButtonClickListener(new NotificationAdapter.onButtonClickListener() {
+            @Override
+            public boolean onSendResponseButtonClick(int position, String response) {
+                Notification notification = notificationArrayList.get(position);
+                ResponseHandler responseHandler = new ResponseHandler(getApplicationContext());
+                boolean isDone = responseHandler.saveResponse(notification.getId(), response, new Date().getTime());
+                if (isDone) {
+                    Toast.makeText(getApplicationContext(), "Message sent successfully", Toast.LENGTH_LONG).show();
+                    return true;
+                } else {
+                    Toast.makeText(getApplicationContext(), "Some error occurred. Please try again later", Toast.LENGTH_LONG).show();
+                    return false;
                 }
-            });
+            }
+        });
+
+        updateUIVisibility();
+    }
+
+    private void updateUIVisibility() {
+        if (notificationArrayList == null || notificationArrayList.size() == 0) {
+            noDataTextView.setText(R.string.No_data);
+            noDataTextView.setVisibility(View.VISIBLE);
+        } else {
+            noDataTextView.setVisibility(View.GONE);
         }
     }
 
@@ -371,7 +376,10 @@ public class MainActivity extends AppCompatActivity
 
         try {
             groupArrayList = ServerDatabaseCommunicator.getInstance().getGroupsList(getActiveUser());
-            notificationArrayList = ServerDatabaseCommunicator.getInstance().getNotifications();
+
+            notificationArrayList.clear();
+            notificationArrayList.addAll(ServerDatabaseCommunicator.getInstance().getNotifications());
+
             new SyncDataWithServices(notificationArrayList, dbHandler).syncData();
         } catch (ServicesAvailabilityException e) {
             e.printStackTrace();
@@ -383,6 +391,7 @@ public class MainActivity extends AppCompatActivity
         addMenuItemInNavMenuDrawer();
 
         notificationAdapter.notifyDataSetChanged();
+        updateUIVisibility();
     }
 
     @SuppressWarnings("StatementWithEmptyBody")
