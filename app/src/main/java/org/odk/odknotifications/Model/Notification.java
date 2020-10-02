@@ -15,6 +15,10 @@ public class Notification {
     private String response;
     private String img_uri;
 
+    public Notification(){
+
+    }
+
     public Notification(String id, String title, String message, Long date, String group, String type,String img_uri) {
         this.id = id;
         this.title = title;

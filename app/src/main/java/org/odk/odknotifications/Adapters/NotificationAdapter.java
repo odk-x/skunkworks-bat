@@ -1,7 +1,5 @@
 package org.odk.odknotifications.Adapters;
 
-import androidx.recyclerview.widget.RecyclerView;
-
 import android.content.Context;
 import android.graphics.BitmapFactory;
 import android.view.LayoutInflater;
@@ -14,6 +12,8 @@ import android.widget.Filterable;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+
+import androidx.recyclerview.widget.RecyclerView;
 
 import org.odk.odknotifications.Model.DateCompare;
 import org.odk.odknotifications.Model.MessageCompare;
@@ -109,7 +109,9 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
             title.setText(notification.getTitle());
             message.setText(notification.getMessage());
             date.setText(notification.getStringDate());
-            imageView.setImageBitmap(BitmapFactory.decodeFile(notification.getImg_uri()));
+
+            String imgUri = context.getFilesDir() + "/" + notification.getId() + ".png";
+            imageView.setImageBitmap(BitmapFactory.decodeFile(imgUri));
 
             if(notification.getType().compareTo(Notification.INTERACTIVE)==0){
                 if(notification.getResponse() != null) {
@@ -153,6 +155,11 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
     @Override
     public int getItemCount() {
         return notificationsFiltered.size();
+    }
+
+    @Override
+    public int getItemViewType(int position) {
+        return position;
     }
 
     @Override

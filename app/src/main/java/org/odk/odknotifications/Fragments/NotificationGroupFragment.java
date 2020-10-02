@@ -1,12 +1,13 @@
 package org.odk.odknotifications.Fragments;
 
 import android.os.Bundle;
-import androidx.fragment.app.Fragment;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+
+import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import org.odk.odknotifications.Adapters.NotificationAdapter;
 import org.odk.odknotifications.DatabaseCommunicator.DBHandler;
@@ -46,7 +47,7 @@ public class NotificationGroupFragment extends Fragment {
             DBHandler dbHandler = new DBHandler(getContext(), null, null, 1);
             notificationArrayList = dbHandler.getNotifications(groupId);
         }
-        notificationAdapter = new NotificationAdapter(notificationArrayList);
+        notificationAdapter = new NotificationAdapter(notificationArrayList,getContext());
         System.out.println("Fragment:"+notificationArrayList.toString());
     }
 

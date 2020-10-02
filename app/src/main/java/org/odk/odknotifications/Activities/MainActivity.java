@@ -1,7 +1,5 @@
 package org.odk.odknotifications.Activities;
 
-import android.app.NotificationManager;
-import android.app.ProgressDialog;
 import android.app.SearchManager;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -11,27 +9,6 @@ import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import androidx.annotation.NonNull;
-
-import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.android.material.navigation.NavigationView;
-
-import androidx.appcompat.widget.SearchView;
-import androidx.core.app.NotificationCompat;
-import androidx.core.app.RemoteInput;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
-import androidx.core.view.GravityCompat;
-import androidx.drawerlayout.widget.DrawerLayout;
-import androidx.appcompat.app.ActionBarDrawerToggle;
-import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
-
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -39,25 +16,36 @@ import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBarDrawerToggle;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.SearchView;
+import androidx.appcompat.widget.Toolbar;
+import androidx.core.view.GravityCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.dynamiclinks.FirebaseDynamicLinks;
 import com.google.firebase.dynamiclinks.PendingDynamicLinkData;
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.odk.odknotifications.Adapters.NotificationAdapter;
 import org.odk.odknotifications.DatabaseCommunicator.DBHandler;
+import org.odk.odknotifications.DatabaseCommunicator.ServerDatabaseCommunicator;
 import org.odk.odknotifications.Fragments.FilterNotificationDialogFragment;
 import org.odk.odknotifications.Fragments.NotificationGroupFragment;
 import org.odk.odknotifications.Fragments.SortingOptionListDialogFragment;
@@ -66,18 +54,18 @@ import org.odk.odknotifications.Listeners.SortingOptionListener;
 import org.odk.odknotifications.Model.Group;
 import org.odk.odknotifications.Model.Notification;
 import org.odk.odknotifications.R;
-import org.odk.odknotifications.Services.MyFirebaseMessagingService;
 import org.odk.odknotifications.SubscribeNotificationGroup;
+import org.odk.odknotifications.SyncDataWithServices;
 import org.odk.odknotifications.UnsubscribeNotificationGroups;
 import org.odk.odknotifications.utils.ResponseHandler;
 import org.opendatakit.application.CommonApplication;
 import org.opendatakit.consts.IntentConsts;
 import org.opendatakit.database.service.UserDbInterface;
+import org.opendatakit.exception.ActionNotAuthorizedException;
 import org.opendatakit.exception.ServicesAvailabilityException;
 import org.opendatakit.listener.DatabaseConnectionListener;
 import org.opendatakit.logging.WebLogger;
 import org.opendatakit.properties.CommonToolProperties;
-import org.opendatakit.properties.PropertiesSingleton;
 import org.opendatakit.utilities.ODKFileUtils;
 
 import java.io.File;
@@ -93,22 +81,20 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.odk.odknotifications.Services.MyFirebaseMessagingService.NOTIFICATION_ID;
-
 
 public class MainActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener, DatabaseConnectionListener, SortingOptionListener, FilterNotificationListener, SwipeRefreshLayout.OnRefreshListener {
+        implements NavigationView.OnNavigationItemSelectedListener, DatabaseConnectionListener, SortingOptionListener, FilterNotificationListener{
 
     private static final String SORTED_ORDER = "sorted_order";
     private static final String FILTERED_GRP = "filtered_grp";
-    //private String appName = "org.odk.odknotifications";
+
     public static String appName = ODKFileUtils.getOdkDefaultAppName();
 
     private DatabaseConnectionListener mIOdkDataDatabaseListener;
+
     private TextView name_tv;
     private String loggedInUsername;
     private String TAG = "ODK-X Notify";
-    private PropertiesSingleton mPropSingleton;
     private DBHandler dbHandler;
     private ArrayList<Group> groupArrayList;
     public static final String ARG_GROUP_ID = "id";
@@ -119,8 +105,13 @@ public class MainActivity extends AppCompatActivity
     private String filteredGrp = "None";
     private String sortedOrder;
     private MenuItem syncitem;
-    private SwipeRefreshLayout swipeRefreshLayout;
     private ArrayList<Notification> notificationArrayList;
+
+    RecyclerView recyclerView;
+    TextView noDataTextView;
+
+    private static final String ANONYMOUS_USER_NAME = "anonymous";
+    private static final String USERNAME_PREFIX = "username:";
 
     protected static final String[] STORAGE_PERMISSION = new String[] {
             android.Manifest.permission.READ_EXTERNAL_STORAGE
@@ -134,6 +125,7 @@ public class MainActivity extends AppCompatActivity
                 isInitialized(true);
             }
         }
+
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -156,28 +148,6 @@ public class MainActivity extends AppCompatActivity
         }
         this.appName = appName;
 
-        notificationArrayList = dbHandler.getAllNotificationsWithResponses();
-        RecyclerView recyclerView = findViewById(R.id.rv_notifications);
-        notificationAdapter = new NotificationAdapter(notificationArrayList,this);
-        recyclerView.setAdapter(notificationAdapter);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
-
-        notificationAdapter.setonButtonClickListener(new NotificationAdapter.onButtonClickListener() {
-            @Override
-            public boolean onSendResponseButtonClick(int position, String response) {
-                Notification notification= notificationArrayList.get(position);
-                ResponseHandler responseHandler = new ResponseHandler(getApplicationContext());
-                boolean isDone = responseHandler.saveResponse(notification.getId(),response, new Date().getTime());
-                if (isDone) {
-                    Toast.makeText(getApplicationContext(),"Message sent successfully",Toast.LENGTH_LONG).show();
-                    return true;
-                }
-               else{
-                    Toast.makeText(getApplicationContext(),"Some error occurred. Please try again later",Toast.LENGTH_LONG).show();
-                    return false;
-                }
-            }
-        });
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -189,6 +159,9 @@ public class MainActivity extends AppCompatActivity
         navigationView.setNavigationItemSelectedListener(this);
         View headerView = navigationView.getHeaderView(0);
         name_tv = (TextView) headerView.findViewById(R.id.name_tv);
+
+        recyclerView = findViewById(R.id.rv_notifications);
+        noDataTextView = findViewById(R.id.no_data_text_view);
 
         findViewById(R.id.sort_button).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -210,14 +183,8 @@ public class MainActivity extends AppCompatActivity
                 bottomSheetDialogFragment.show(getSupportFragmentManager(), bottomSheetDialogFragment.getTag());
             }
         });
-        addMenuItemInNavMenuDrawer();
-        swipeRefreshLayout = findViewById(R.id.swipeRefreshLayout);
-         swipeRefreshLayout.setOnRefreshListener(this);
-         if(notificationArrayList.size()==0) {
-            TextView textView = findViewById(R.id.no_data_text_view);
-            textView.setText(R.string.No_data);
-            textView.setVisibility(View.VISIBLE);
-        }
+
+        addNotifications();
     }
 
     @Override
@@ -293,9 +260,50 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
+    private void addNotifications(){
+
+        notificationArrayList = dbHandler.getAllNotificationsWithResponses();
+        notificationAdapter = new NotificationAdapter(notificationArrayList, this);
+
+        recyclerView.setAdapter(notificationAdapter);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+
+        notificationAdapter.setonButtonClickListener(new NotificationAdapter.onButtonClickListener() {
+            @Override
+            public boolean onSendResponseButtonClick(int position, String response) {
+                Notification notification = notificationArrayList.get(position);
+                ResponseHandler responseHandler = new ResponseHandler(getApplicationContext());
+                boolean isDone = responseHandler.saveResponse(notification.getId(), response, new Date().getTime());
+                if (isDone) {
+                    Toast.makeText(getApplicationContext(), "Message sent successfully", Toast.LENGTH_LONG).show();
+                    return true;
+                } else {
+                    Toast.makeText(getApplicationContext(), "Some error occurred. Please try again later", Toast.LENGTH_LONG).show();
+                    return false;
+                }
+            }
+        });
+
+        updateUIVisibility();
+    }
+
+    private void updateUIVisibility() {
+        if (notificationArrayList == null || notificationArrayList.size() == 0) {
+            noDataTextView.setText(R.string.No_data);
+            noDataTextView.setVisibility(View.VISIBLE);
+        } else {
+            noDataTextView.setVisibility(View.GONE);
+        }
+    }
+
     private void addMenuItemInNavMenuDrawer() {
         NavigationView navView = (NavigationView) findViewById(R.id.nav_view);
-        groupArrayList = dbHandler.getGroups();
+
+        try {
+            groupArrayList = ServerDatabaseCommunicator.getInstance().getGroupsList(getActiveUser());
+        } catch (ServicesAvailabilityException e) {
+            e.printStackTrace();
+        }
         Menu menu = navView.getMenu();
         menu.clear();
         for (int i =0; i<groupArrayList.size();i++){
@@ -303,6 +311,20 @@ public class MainActivity extends AppCompatActivity
             menu.add(0,i,0,groupArrayList.get(i).getName());
         }
         navView.invalidate();
+    }
+
+    private void setUserName(){
+
+        loggedInUsername = getActiveUser();
+        Log.d("Success", "Database available " + loggedInUsername);
+        if(loggedInUsername!=null){
+            if (!(loggedInUsername.equals(ANONYMOUS_USER_NAME)) && loggedInUsername.length() > 8 && loggedInUsername.substring(0, 9).equals(USERNAME_PREFIX)) {
+                loggedInUsername = loggedInUsername.substring(9);   //To remove prefix from the UserID
+            }
+            name_tv.setText(loggedInUsername);
+            SharedPreferences preferences = getSharedPreferences(getPackageName(),MODE_PRIVATE);
+            preferences.edit().putString("username",loggedInUsername).apply();
+        }
     }
 
     @Override
@@ -351,39 +373,25 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void syncCloudDatabase() {
-        groupArrayList = getGroups();
+
+        try {
+            groupArrayList = ServerDatabaseCommunicator.getInstance().getGroupsList(getActiveUser());
+
+            notificationArrayList.clear();
+            notificationArrayList.addAll(ServerDatabaseCommunicator.getInstance().getNotifications());
+
+            new SyncDataWithServices(notificationArrayList, dbHandler).syncData();
+        } catch (ServicesAvailabilityException e) {
+            e.printStackTrace();
+        }
+
         new UnsubscribeNotificationGroups(this).execute();
-        addGroupsFromFirebase();
         joinODKGroups(groupArrayList);
+
         addMenuItemInNavMenuDrawer();
-    }
 
-    private void addGroupsFromFirebase() {
-        final ProgressDialog dialog = new ProgressDialog(this);
-        dialog.setMessage("Please Wait! Loading groups from firebase...");
-        dialog.show();
-        dialog.setCancelable(false);
-        DatabaseReference mRef  = FirebaseDatabase.getInstance().getReference().child("clients").child(loggedInUsername).child("groups");
-
-        mRef.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                for(DataSnapshot group: dataSnapshot.getChildren()){
-                    String name =(String) group.child("name").getValue();
-                    String id = (String) group.child("id").getValue();
-                    Group grp = new  Group(id,name,0);
-                    groupArrayList.add(grp);
-                    new SubscribeNotificationGroup(MainActivity.this, id, loggedInUsername).execute();
-                    dbHandler.addNewGroup(grp);
-                }
-                dialog.dismiss();
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
+        notificationAdapter.notifyDataSetChanged();
+        updateUIVisibility();
     }
 
     @SuppressWarnings("StatementWithEmptyBody")
@@ -430,18 +438,26 @@ public class MainActivity extends AppCompatActivity
         if (mIOdkDataDatabaseListener != null) {
             mIOdkDataDatabaseListener.databaseAvailable();
         }
-        loggedInUsername = getActiveUser();
-        Log.e("Success", "Database available " + loggedInUsername);
-        if(loggedInUsername!=null){
-            if(!(loggedInUsername.compareTo("anonymous")==0)&& loggedInUsername.length()>8 && loggedInUsername.substring(0,9).compareTo("username:")==0){
-                loggedInUsername = loggedInUsername.substring(9);
-            }
-            name_tv.setText(loggedInUsername);
-            SharedPreferences preferences = getSharedPreferences(getPackageName(),MODE_PRIVATE);
-            preferences.edit().putString("username",loggedInUsername).apply();
-        }
+
+        setUserName();
+
         if(hasBeenInitialized){
             getDeepLink();
+        }
+        try {
+
+            ServerDatabaseCommunicator.getInstance().init(getDatabase(), getAppName());
+
+            groupArrayList = ServerDatabaseCommunicator.getInstance().getGroupsList(getActiveUser());
+
+            addMenuItemInNavMenuDrawer();
+
+        } catch (ServicesAvailabilityException e) {
+            e.printStackTrace();
+        } catch (JSONException e) {
+            e.printStackTrace();
+        } catch (ActionNotAuthorizedException e) {
+            e.printStackTrace();
         }
     }
 
@@ -451,8 +467,8 @@ public class MainActivity extends AppCompatActivity
         if (mIOdkDataDatabaseListener != null) {
             mIOdkDataDatabaseListener.databaseUnavailable();
         }
+        Toast.makeText(getApplicationContext(),"Database not found", Toast.LENGTH_LONG).show();
         Log.e("ERROR", "Database unavailable");
-
     }
 
 
@@ -500,26 +516,23 @@ public class MainActivity extends AppCompatActivity
                             if(deepLink!=null) {
                                 URL url = new URL(deepLink.toString());
                                 Map<String, String> map = splitQuery(url);
-                                String id = map.get("id");
-                                DatabaseReference mRef = FirebaseDatabase.getInstance().getReference();
-                                mRef.child("group").child(id).addListenerForSingleValueEvent(new ValueEventListener() {
-                                    @Override
-                                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                                        Group group = new Group((String)dataSnapshot.child("id").getValue(),(String)dataSnapshot.child("name").getValue(),0);
-                                        new SubscribeNotificationGroup(MainActivity.this,group.getId(),loggedInUsername).execute();
-                                        DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference().child("clients").child(loggedInUsername).child("groups").push();
-                                        databaseReference.child("id").setValue(group.getId());
-                                        databaseReference.child("name").setValue(group.getName());
-                                        dbHandler.addNewGroup(group);
-                                        addMenuItemInNavMenuDrawer();
+                                final String id = map.get("id");
+                                if(id!=null && !id.equals("")) {
+                                    try {
+                                        ServerDatabaseCommunicator.getInstance().addGroup(id);
+                                    } catch (ServicesAvailabilityException e) {
+                                        e.printStackTrace();
+                                    } catch (ActionNotAuthorizedException e) {
+                                        e.printStackTrace();
                                     }
+                                    addMenuItemInNavMenuDrawer();
+                                    new SubscribeNotificationGroup(MainActivity.this, id, loggedInUsername).execute();
 
-                                    @Override
-                                    public void onCancelled(@NonNull DatabaseError databaseError) {
-
-                                    }
-                                });
-
+                                    Toast.makeText(getApplicationContext(),"Successfully joined the Group",Toast.LENGTH_LONG).show();
+                                }
+                                else {
+                                    Toast.makeText(getApplicationContext(),"Error in Joining group",Toast.LENGTH_LONG).show();
+                                }
                             }
                             else {
                                 Log.d(TAG, "getDynamicLink: no link found");
@@ -549,27 +562,6 @@ public class MainActivity extends AppCompatActivity
         }
         return query_pairs;
     }
-
-   public ArrayList<Group> getGroups(){
-        ArrayList<Group> groupsList = new ArrayList<>();
-      try {
-          String roles_array_string = getDatabase().getRolesList(getAppName());
-
-          JSONArray rolesArray = new JSONArray(roles_array_string);
-              for (int i=0;i<rolesArray.length();i++){
-                  if(rolesArray.getString(i).startsWith("GROUP_")|| rolesArray.getString(i).startsWith("ROLE_"))
-                  groupsList.add(new Group(rolesArray.getString(i), rolesArray.getString(i), 0));
-              }
-
-      } catch (JSONException e) {
-          e.printStackTrace();
-      } catch (ServicesAvailabilityException e) {
-          e.printStackTrace();
-      } catch (NullPointerException e){
-          e.printStackTrace();
-      }
-       return groupsList;
-   }
 
     public void joinODKGroups(ArrayList<Group> groupArrayList){
         for(Group group: groupArrayList) {
@@ -679,12 +671,5 @@ public class MainActivity extends AppCompatActivity
     public void sort(String field) {
         notificationAdapter.sort(field);
         sortedOrder = field;
-    }
-
-    @Override
-    public void onRefresh() {
-       notificationArrayList=dbHandler.getAllNotificationsWithResponses();
-       notificationAdapter.notifyDataSetChanged();
-       swipeRefreshLayout.setRefreshing(false);
     }
 }
