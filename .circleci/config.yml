@@ -1,0 +1,104 @@
+version: 2
+
+references:
+
+  ## Cache
+
+  cache_key: &cache_key
+    key: jars-{{ checksum "build.gradle" }}-{{ checksum "app/build.gradle" }}
+  restore_cache: &restore_cache
+    restore_cache:
+      <<: *cache_key
+  save_cache: &save_cache
+    save_cache:
+      <<: *cache_key
+      paths:
+      - ~/work/.gradle
+
+  accept_licenses : &accept_licenses
+    run:
+      name: Accept licenses
+      command: yes | sdkmanager --licenses || true
+
+  ## Workspace
+
+  workspace: &workspace
+               ~/work
+  attach_debug_workspace: &attach_debug_workspace
+    attach_workspace:
+      at: *workspace
+  persist_debug_workspace: &persist_debug_workspace
+    persist_to_workspace:
+      root: *workspace
+      paths:
+      - app/build/outputs/androidTest-results
+      - app/build/outputs/apk
+      - app/build/outputs/code-coverage
+      - app/build/test-results
+
+  ## Docker image configurations
+
+  android_config: &android_config
+    working_directory: *workspace
+    docker:
+    - image: circleci/android:api-28
+    environment:
+      # Least invasive change to resolve out-of-memory error: https://discuss.circleci.com/t/circle-ci-v2-and-android-memory-issues/11207/9
+      _JAVA_OPTIONS: "-Xmx1024m"
+
+jobs:
+
+  ## Build debug APK and instrumented test APK
+
+  build_debug:
+    <<: *android_config
+    steps:
+    - checkout
+    - *restore_cache
+    - *accept_licenses
+    - run:
+        name: Download dependencies
+        command: ./gradlew androidDependencies
+    - *save_cache
+    - run:
+        name: Run code quality checks
+        command: ./gradlew checkCode
+        path:
+    - store_artifacts:
+        path: app/build/reports
+        destination: reports
+    - run:
+        name: Assemble debug and test builds
+        command: |
+          ./gradlew assembleDebug -PdisablePreDex
+          ./gradlew assembleDebugAndroidTest -PdisablePreDex
+    - *persist_debug_workspace
+
+  ## Run unit tests
+
+  test_unit:
+    <<: *android_config
+    steps:
+    - checkout
+    - *restore_cache
+    - *accept_licenses
+    - run:
+        name: Download dependencies
+        command: ./gradlew androidDependencies
+    - *save_cache
+    - run:
+        name: Run unit tests
+        command: ./gradlew testDebugUnitTest
+    - *persist_debug_workspace
+    - store_artifacts:
+        path: app/build/reports
+        destination: reports
+    - store_test_results:
+        path: app/build/test-results
+
+workflows:
+  version: 2
+  workflow:
+    jobs:
+    - build_debug
+    - test_unit
